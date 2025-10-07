@@ -1,6 +1,6 @@
 # NeuroData_860.053-MUW
 
-Welcome to the ecture of the MUW on Processing and Interpretation of Neuroscience Data.
+Welcome to the lecture of the MUW on Processing and Interpretation of Neuroscience Data.
 
 This repository is fundamental for the lectures # 5 to 8.
 
