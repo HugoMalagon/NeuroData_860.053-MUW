@@ -3,18 +3,19 @@
 Welcome to the ecture of the MUW on Processing and Interpretation of Neuroscience Data
 Before our first session, please make sure you have MATLAB installed and ready to use.
 
-Step 1: Create a MathWorks Account
+# **Step 1: Create a MathWorks Account**
 
 Go to https://www.mathworks.com
 .
 
 Click Sign In → Create Account.
 
-Use your University email address – this is required to access the academic license provided by your institution.
+### Important
+**Use your University email address** – this is required to access the academic license provided by your institution.
 
 Verify your email and sign in.
 
-Step 2: Download MATLAB
+# **Step 2: Download MATLAB**
 
 Once logged in, go to the Downloads section.
 
@@ -24,7 +25,7 @@ Follow the on-screen instructions to install MATLAB on your computer.
 
 Windows, macOS, and Linux are all supported.
 
-Step 3: Select Toolboxes (Packages)
+# **Step 3: Select Toolboxes (Packages)**
 
 You don’t need to install everything!
 For this course, please make sure you include the following essential toolboxes during installation (you can always add more later):
