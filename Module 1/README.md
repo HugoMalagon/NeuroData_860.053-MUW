@@ -8,8 +8,6 @@ This module introduces core MATLAB concepts through hands-on mini-exercises tail
 
 The live script is self-contained: if no data are present, it generates small demo files and tables so you can run everything end-to-end.
 
-For slides with additional context and examples, see Module 1.pdf (presentation). The content aligns with the “Block 1 – MATLAB Basics & Data Exploration” outline for this course.
-
 ## Learning goals
 
 By the end of Module 1 you will be able to:
