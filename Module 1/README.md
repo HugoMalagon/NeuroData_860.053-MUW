@@ -50,6 +50,8 @@ This module follows the course structure for Processing and Interpretation of Ne
 This module is inspired in personal work from Hugo Malagon.
 ## Resources used to create the module:
 ChatGPT
+
 https://eng.ox.ac.uk/matlab/training/
+
 https://uk.mathworks.com/learn/tutorials/matlab-onramp.html   --> (Check this)
 
