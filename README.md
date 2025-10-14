@@ -2,7 +2,9 @@
 
 Welcome to the lecture of the MUW on Processing and Interpretation of Neuroscience Data.
 
-This repository is fundamental for the lectures # 5 to 8.
+This repository is fundamental for the lessons # 5 to 8.
+
+However, Info about the lesson # 1 to # 4 can be found in the Proc&IntData Information L1 - L4.docx
 
 Before Session 5 (November 11, 2025), please ensure that you have MATLAB installed and ready to use.
 
