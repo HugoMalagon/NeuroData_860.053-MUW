@@ -4,7 +4,7 @@ Welcome to the lecture of the MUW on Processing and Interpretation of Neuroscien
 
 This repository is fundamental for the lessons # 5 to 8.
 
-However, Info about the lesson # 1 to # 4 can be found in the Proc&IntData Information L1 - L4.docx
+However, Info about the lesson # 1 to # 4 can be found in the Proc&IntData Information L1 - L4.docx, located in the folder Lessons 1 - 4
 
 Before Session 5 (November 11, 2025), please ensure that you have MATLAB installed and ready to use.
 
