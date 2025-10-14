@@ -1,4 +1,4 @@
-# Module 1 — Working with Variables
+# Lesson 5 — Working with Variables
 
 Processing and Interpretation of Neuroscience Data
 
@@ -47,7 +47,7 @@ When you see Tasks / Exercises, type your answers directly below the prompts.
 # Acknowledgments
 
 This module follows the course structure for Processing and Interpretation of Neuroscience Data (860.053-MUW), Day 5 (MATLAB Basics & Data Exploration), and prepares you for later blocks on time series, events, modeling, and calcium imaging.
-This module is inspired in personal work from Hugo Malagon.
+This module is inspired in personal work from Hugo Malagon, in addition to some resources listed here.
 ## Resources used to create the module:
 ChatGPT
 
