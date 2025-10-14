@@ -1,4 +1,4 @@
-# Module 1 — Working with Variables
+# Lesson 5 — Working with Variables
 
 Processing and Interpretation of Neuroscience Data
 
