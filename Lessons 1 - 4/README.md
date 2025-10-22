@@ -1,88 +1,208 @@
+***
+# Processing and Interpretation of Neuroscience Data
+
+**Course Information – First 4 Lessons**
+
 Dear Students,
-Here is some information essential for the first 4 lessons of the Processing and interpretation of neuroscience data.
 
-Important – to do prior first lecture
+Here is some information essential for the first 4 lessons of the **Processing and Interpretation of Neuroscience Data** course.
 
-We kindly request all students to install Oracle's VirtualBox, a free software compatible with most platforms using x86/x64 CPUs. You can download it here: 
-•	https://www.virtualbox.org/wiki/Downloads. 
+The newest versions of the code can be found on GitHub:
 
-For guidance on using VirtualBox, please refer to the following resources: 
-•	https://www.virtualbox.org/manual/
+- [GitHub repository](https://github.com/HugoMalagon/NeuroData_860.053-MUW)
 
-https://kb.hosting.com/docs/configuring-a-virtual-machine-for-local-testing, and 
-•	https://www.youtube.com/watch?v=nvdnQX9UkMY. 
+***
 
-Additionally, please download the prepared Virtual Machine. Note that it is approximately 10GB in size, so ensure you have sufficient space (20GB on a drive). VM download link:
-•	https://filesender.aco.net/?s=download&token=2b1e953a-5a08-484c-9401-680cad8364fe
+## Important — To Do Prior to the First Lecture
 
-Once VirtualBox is installed and You download the files, please open the VirtualBox and import the OVA file.
-Some guide: https://www.youtube.com/watch?v=PJdsjpZmMMo
+### Windows and Linux Users — Virtual Machine
 
-Pass for VM is the same as user name. Please check if it starts, we can do some troubleshooting at the beginning.
-MAC users:
+We kindly request all students to install **Oracle VirtualBox**, a free software compatible with most x86/x64 CPUs:
 
-Please verify your processor. If it is an ARM version, such as the M1, rather than an x86, VirtualBox will not function for you. In this case, please contact us so we can guide you on how to install the necessary materials. Alternatively, consider collaborating with someone who has a Linux or Windows machine.
-Additional materials
+- [Download VirtualBox](https://www.virtualbox.org/wiki/Downloads)
 
-Please have a look at the provided links for additional materials, as well as the attached cheat sheets. This is provided together in the VM link.
-Lectures overview:
+For guidance on using VirtualBox, please refer to the following resources:
 
-21.10
-•	Introduction to R
-•	Practical’s, basic data assessment and analysis: means, medians, t-test etc.
-•	Visual analytics: basic plots
+- [Official Manual](https://www.virtualbox.org/manual/)
+- [Configuring a Virtual Machine for Local Testing](https://kb.hosting.com/docs/configuring-a-virtual-machine-for-local-testing)
+- [YouTube Guide](https://www.youtube.com/watch?v=nvdnQX9UkMY)
 
-28.10
-•	Introduction to bulk sequencing and analysis methods
-•	Dimensional reduction: PCA and UMAP 
-•	Clustering methods: k-means, k-nn
+Additionally, please download the prepared Virtual Machine (approx. 10 GB, ensure at least 20 GB free space):
 
-4.11
-•	Introduction to Seurat
-•	Preprocessing of scRNAseq
+- [VM Download Link](https://filesender.aco.net/?s=download&token=4e19de24-a6de-4f25-bbd1-95b51ee090cd)
 
-11.11
-•	Clustering in Seurat 
-•	DEG interpretation
-Additional materials 
+Once VirtualBox is installed and the files are downloaded, open VirtualBox and **import the OVA file**.
+Helpful guide: [How to Import OVA to VirtualBox](https://www.youtube.com/watch?v=PJdsjpZmMMo)
 
-Rstudio usage
-•	General introduction: https://www.youtube.com/watch?v=eA6kf4yJXGw&list=WL&index=26&t=332s
-•	Basics: https://www.youtube.com/watch?v=FY8BISK5DpM
-•	Looking at data: https://choonghyunryu.github.io/dlookr/
-•	data explorer library: https://cran.r-project.org/web/packages/DataExplorer/vignettes/dataexplorer-intro.html#qq-plot
-•	tables: https://www.danieldsjoberg.com/gtsummary/
+*Password for VM is the same as the username.*
+Please check if the VM starts; troubleshooting will be available at the beginning of class.
 
-GGplot in R
-•	Datacamp: https://www.youtube.com/watch?v=YxKr2a-Y1WE&list=PLjgj6kdf_snaBCTJEi53DvRVgOuVbzyku
-•	Hadley talk: https://www.youtube.com/watch?v=ZdPNBF6GWBw
+***
 
-Tidyverse
-•	general intro: https://www.youtube.com/watch?v=KsBBRHAgAhM
-•	Dplyr: https://www.youtube.com/watch?v=Bg4qxVNaDck
-•	Data wrangling in Dplyr: https://www.youtube.com/watch?v=XcK4chr2jws
-•	intro: youtube.com/watch?v=FV5mPG1uLJk&t=37s&pp=ygUSdGVhY2hpbmcgdGlkeXZlcnNl
+### Mac Users
 
-General statistics
-•	statistics: https://www.youtube.com/watch?v=dYJLUvo0Q6g
-•	variable selection: https://www.youtube.com/watch?v=XMZ_0aloVAc&list=PL6Gy8EsbrMF-lsnMywDYt73yrzm5HaGtG
+1. Verify your processor type.
+    - If it is **x86**, follow the same Virtual Machine setup as above.
+    - If it is **ARM (e.g., M1 or M2)**, VirtualBox will not function. Instead:
 
-Dimensional reduction
-•	Eigenvectors: https://www.youtube.com/watch?v=9CT0jnem4vM&t=18s
-•	Eigenvectors and values math: https://www.youtube.com/watch?v=JtcNe--fsyA&t=5s
-•	t-SNE: https://www.youtube.com/watch?v=Bl85EfTiGj0
-•	t-SNE Explained: https://www.youtube.com/watch?v=NEaUSP4YerM&list=PL6Gy8EsbrMF-lsnMywDYt73yrzm5HaGtG&index=7
-•	PCA: https://www.youtube.com/watch?v=FgakZw6K1QQ&list=PL6Gy8EsbrMF-lsnMywDYt73yrzm5HaGtG&index=6
-•	PCA - math; https://www.youtube.com/watch?v=S51bTyIwxFs&t=909s
-•	PCA - standardization: https://www.youtube.com/watch?v=dh8aTKXPKlU&t=601s
-•	PCA - interpretation: https://www.youtube.com/watch?v=BiuwDI_BbWw
-•	UMAP math: https://www.youtube.com/watch?v=jth4kEvJ3P8&list=WL&index=18
+#### Steps for ARM (M1/M2) Macs
 
-Clustering
-•	k-means: https://www.youtube.com/watch?v=4E_DFMt60rc
-•	k-NN: https://www.youtube.com/watch?v=48RqX4HTtCE
+1. Install **R version 4.5.1** and **RStudio**:
+    - [R 4.5.1 for macOS (ARM)](https://cran.r-project.org/bin/macosx/big-sur-arm64/base/R-4.5.1-arm64.pkg)
+    - [RStudio 2025.09.1-401](https://download1.rstudio.org/electron/macos/RStudio-2025.09.1-401.dmg)
+    - [Video Guide](https://www.youtube.com/watch?v=I5WIMX4LK8M)
+2. Download data instead of the Virtual Machine:
+    - [Data Link](https://filesender.aco.net/?s=download&token=d56276eb-978c-4697-9886-1131af5064fe)
+3. Unpack the data.
+4. Open **Processing_Interpretation_Data_macos.Rproj** in RStudio.
+5. In the RStudio console, type:
 
-Seurat
-•	Basics of Seurat: https://www.youtube.com/watch?v=G3Cg7vGpctg&list=PL6Gy8EsbrMF-lsnMywDYt73yrzm5HaGtG&index=44
-•	https://biostatsquid.com/seurat-objects-explained
+```r
+renv::repair()
+```
 
+If you get an error that **renv** is not found, install it first:
+
+```r
+install.packages("renv")
+renv::repair()
+```
+
+*If issues persist, please come 15 minutes earlier before class for troubleshooting.*
+
+**Important:** Download the newest version of `*.Rmd` files from GitHub before class.
+
+***
+
+### Advanced Linux Users
+
+If you prefer a lightweight setup:
+
+1. Install **R version 4.5.1** and **RStudio**.
+2. Download the packed lectures:
+    - [Linux Data Link](https://filesender.aco.net/?s=download&token=aa4dae03-f1c2-49be-a0a5-745d07e4a5f7)
+3. Unpack the data.
+4. Open **Processing_Interpretation_Data_linux.Rproj**.
+5. In RStudio, run:
+
+```r
+renv::restore()
+```
+
+If necessary:
+
+```r
+install.packages("renv")
+```
+
+Additional Linux libraries may need installation; follow console prompts.
+
+***
+
+### Advanced R Users
+
+For those comfortable managing R environments manually:
+
+1. Install **R version 4.5.1** and **RStudio**.
+2. Download all lesson `.Rmd` files and the `renv.lock` file into your R project.
+3. Install dependencies with:
+
+```r
+install.packages("renv")
+renv::restore()
+```
+
+
+***
+
+## Additional Materials
+
+Please review the additional links and cheat sheets provided within the VM package.
+
+***
+
+## Lectures Overview
+
+### 21.10
+
+- Introduction to R
+- Practical examples: descriptive statistics, t-tests
+- Visual analytics with base plots
+
+
+### 28.10
+
+- Introduction to bulk sequencing and analysis methods
+- Dimensional reduction: PCA and UMAP
+- Clustering methods: k-means, k-NN
+
+
+### 4.11
+
+- Introduction to Seurat
+- Preprocessing single-cell RNA-seq data
+
+
+### 11.11
+
+- Clustering in Seurat
+- Differential Expression Gene (DEG) interpretation
+
+***
+
+## Additional Learning Resources
+
+### RStudio Usage
+
+- [General Introduction](https://www.youtube.com/watch?v=eA6kf4yJXGw&list=WL&index=26&t=332s)
+- [Basics of RStudio](https://www.youtube.com/watch?v=FY8BISK5DpM)
+- [Inspecting Data](https://choonghyunryu.github.io/dlookr/)
+- [DataExplorer Library](https://cran.r-project.org/web/packages/DataExplorer/vignettes/dataexplorer-intro.html#qq-plot)
+- [Creating Tables](https://www.danieldsjoberg.com/gtsummary/)
+
+
+### ggplot2 in R
+
+- [Datacamp Tutorial](https://www.youtube.com/watch?v=YxKr2a-Y1WE&list=PLjgj6kdf_snaBCTJEi53DvRVgOuVbzyku)
+- [Hadley Wickham Talk](https://www.youtube.com/watch?v=ZdPNBF6GWBw)
+
+
+### Tidyverse
+
+- [General Introduction](https://www.youtube.com/watch?v=KsBBRHAgAhM)
+- [Dplyr Basics](https://www.youtube.com/watch?v=Bg4qxVNaDck)
+- [Data Wrangling in Dplyr](https://www.youtube.com/watch?v=XcK4chr2jws)
+- [Tidyverse Teaching Intro](https://youtube.com/watch?v=FV5mPG1uLJk&t=37s&pp=ygUSdGVhY2hpbmcgdGlkeXZlcnNl)
+
+
+### General Statistics
+
+- [Introductory Statistics](https://www.youtube.com/watch?v=dYJLUvo0Q6g)
+- [Variable Selection](https://www.youtube.com/watch?v=XMZ_0aloVAc&list=PL6Gy8EsbrMF-lsnMywDYt73yrzm5HaGtG)
+
+
+### Dimensional Reduction
+
+- [Eigenvectors Explained](https://www.youtube.com/watch?v=9CT0jnem4vM&t=18s)
+- [Eigenvectors \& Eigenvalues](https://www.youtube.com/watch?v=JtcNe--fsyA&t=5s)
+- [t-SNE Basics](https://www.youtube.com/watch?v=Bl85EfTiGj0)
+- [t-SNE Explained](https://www.youtube.com/watch?v=NEaUSP4YerM&index=7)
+- [PCA Overview](https://www.youtube.com/watch?v=FgakZw6K1QQ)
+- [PCA Math](https://www.youtube.com/watch?v=S51bTyIwxFs&t=909s)
+- [PCA Standardization](https://www.youtube.com/watch?v=dh8aTKXPKlU&t=601s)
+- [PCA Interpretation](https://www.youtube.com/watch?v=BiuwDI_BbWw)
+- [UMAP Mathematics](https://www.youtube.com/watch?v=jth4kEvJ3P8)
+
+
+### Clustering
+
+- [k-Means Clustering](https://www.youtube.com/watch?v=4E_DFMt60rc)
+- [k-Nearest Neighbors](https://www.youtube.com/watch?v=48RqX4HTtCE)
+
+
+### Seurat
+
+- [Basics of Seurat](https://www.youtube.com/watch?v=G3Cg7vGpctg)
+- [Seurat Objects Explained](https://biostatsquid.com/seurat-objects-explained)
+
+***
