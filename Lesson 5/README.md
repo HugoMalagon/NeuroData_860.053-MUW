@@ -10,7 +10,7 @@ The live script is self-contained: if no data are present, it generates small de
 
 ## Learning goals
 
-By the end of Module 1 you will be able to:
+By the end of Lesson 5 you will be able to:
 
 Explain MATLAB’s “everything is an array” model (scalars, vectors, matrices).
 
@@ -28,6 +28,8 @@ Write simple scripts and functions; use loops and basic if/else.
 
 Organize and save results (tables, figures, MAT files).
 
+Basic plotting.
+
 ## Prerequisites
 
 MATLAB (R2019b or newer recommended). No toolboxes required for core parts.
@@ -36,22 +38,25 @@ Very basic command-line familiarity (running sections in Live Editor).
 
 ## How to use this module
 
-Open the live script Module_1_LiveScript.mlx in MATLAB.
+Open the live script Lesson5_Students_LiveScript.mlx in MATLAB.
 
-Use Run Section to execute cells top-to-bottom.
+Use f9 to run code parts top-to-bottom.
 
 Watch outputs in the Command Window, variables in the Workspace, and files in the Current Folder.
 
-When you see Tasks / Exercises, type your answers directly below the prompts.
+When you see Tasks / Exercises, normally labelled "FOR YOU!!" type your answers on another new script
 
 # Acknowledgments
 
 This module follows the course structure for Processing and Interpretation of Neuroscience Data (860.053-MUW), Day 5 (MATLAB Basics & Data Exploration), and prepares you for later blocks on time series, events, modeling, and calcium imaging.
-This module is inspired in personal work from Hugo Malagon, in addition to some resources listed here.
+This module is inspired in personal work from Vered Kellner and Hugo Malagon, in addition to some resources listed here.
 ## Resources used to create the module:
 ChatGPT
 
 https://eng.ox.ac.uk/matlab/training/
 
 https://uk.mathworks.com/learn/tutorials/matlab-onramp.html   --> (Check this)
+
+https://de.mathworks.com/matlabcentral/cody/problems
+
 
