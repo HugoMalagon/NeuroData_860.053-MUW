@@ -1,3 +1,10 @@
+# IMPORTANT
+
+Unless you are interested on specific individual files, the best option is to download the entire repository.
+
+From this page, you go to the "code" button and click on the down arrow. It should give you the option to download as a Zip file. You can also clone it if you have a github account.
+
+
 # NeuroData_860.053-MUW
 
 Welcome to the lecture of the MUW on Processing and Interpretation of Neuroscience Data.
