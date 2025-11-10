@@ -26,17 +26,9 @@ By the end of Lesson 6, you will be able to:
 
 - Understand how noise influences feature detection.
 
-### Frequency-Domain Analysis
+### Spike data properties
 
-- Compute and interpret the Power Spectral Density (PSD) of a signal.
-
-- Identify dominant oscillatory components in the frequency domain.
-
-### Filtering
-
-- Apply basic filters (e.g., low-pass, high-pass) to isolate relevant components of a signal.
-
-- Compare filtered and unfiltered traces and interpret their differences.
+- Understanding autocorrelograms of spikes from single neurons
 
 ### Statistics for Signal Comparison
 
