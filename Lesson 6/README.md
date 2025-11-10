@@ -20,67 +20,67 @@ By the end of Lesson 6, you will be able to:
 
 ### Signal Visualization & Features
 
-Plot time-series signals and visually describe their structure.
+- Plot time-series signals and visually describe their structure.
 
-Detect peaks in noisy signals using MATLAB’s findpeaks function, adjusting thresholds and constraints.
+- Detect peaks in noisy signals using MATLAB’s findpeaks function, adjusting thresholds and constraints.
 
-Understand how noise influences feature detection.
+- Understand how noise influences feature detection.
 
 ### Frequency-Domain Analysis
 
-Compute and interpret the Power Spectral Density (PSD) of a signal.
+- Compute and interpret the Power Spectral Density (PSD) of a signal.
 
-Identify dominant oscillatory components in the frequency domain.
+- Identify dominant oscillatory components in the frequency domain.
 
 ### Filtering
 
-Apply basic filters (e.g., low-pass, high-pass) to isolate relevant components of a signal.
+- Apply basic filters (e.g., low-pass, high-pass) to isolate relevant components of a signal.
 
-Compare filtered and unfiltered traces and interpret their differences.
+- Compare filtered and unfiltered traces and interpret their differences.
 
 ### Statistics for Signal Comparison
 
-Run paired and unpaired t-tests.
+- Run paired and unpaired t-tests.
 
-Perform one-way ANOVA.
+- Perform one-way ANOVA.
 
-Visualize group comparisons with boxplots and annotate significance.
+- Visualize group comparisons with boxplots and annotate significance.
 
 ### Spike Data: Raster Plots & PSTHs
 
-Use the legacy mlib6 toolbox to load and visualize neuronal spike trains.
+- Use the legacy mlib6 toolbox to load and visualize neuronal spike trains.
 
-Generate raster plots and peristimulus time histograms (PSTHs).
+- Generate raster plots and peristimulus time histograms (PSTHs).
 
-Interpret neuronal responses to events or task actions.
+- Interpret neuronal responses to events or task actions.
 
-Identify neurons responsive to reward or cue-related epochs.
+- Identify neurons responsive to reward or cue-related epochs.
 
 ## Prerequisites
 
-MATLAB (R2019b or newer recommended).
+- MATLAB (R2019b or newer recommended).
 
-mlib6 toolbox (included in the lesson folder — be sure to Add to Path in MATLAB).
+- mlib6 toolbox (included in the lesson folder — be sure to Add to Path in MATLAB).
 
-Basic familiarity with MATLAB Live Scripts.
+- Basic familiarity with MATLAB Live Scripts.
 
-Concepts covered in Lesson 5 (arrays, plotting, basic operations).
+- Concepts covered in Lesson 5 (arrays, plotting, basic operations).
 
 ## How to Use This Module
 
-Open Lesson6_Students_LiveScript.mlx in MATLAB.
+1. Open Lesson6_Students_LiveScript.mlx in MATLAB.
 
-Use F9 to run each code section sequentially.
+2. Use F9 to run each code section sequentially.
 
-Visualize outputs in the Live Editor figure panels.
+3. Visualize outputs in the Live Editor figure panels.
 
-For each Question and Exercise (e.g., L6-Q1.1, L6-E.2), write your answers in a separate script.
+4. For each Question and Exercise (e.g., L6-Q1.1, L6-E.2), write your answers in a separate script.
 
-For PSTH/raster analysis:
+5. For PSTH/raster analysis:
 
-Ensure the folder mlib6 is added to your MATLAB path.
+    - Ensure the folder mlib6 is added to your MATLAB path.
 
-Explore the documentation using help mraster and help mpsth.
+    - Explore the documentation using help mraster and help mpsth.
 
 ## Acknowledgments
 
@@ -88,12 +88,12 @@ This lesson is adapted from material prepared by Vered Kellner and Hugo Malagon 
 
 ## Resources Used to Create This Module
 
-ChatGPT
+- ChatGPT
 
-MATLAB documentation (signal processing, PSD estimation, filtering)
+- MATLAB documentation (signal processing, PSD estimation, filtering)
 
-mlib6 toolbox for spike-data analysis
+- mlib6 toolbox for spike-data analysis
 
-https://de.mathworks.com/matlabcentral/fileexchange/37339-mlib-toolbox-for-analyzing-spike-data
+- https://de.mathworks.com/matlabcentral/fileexchange/37339-mlib-toolbox-for-analyzing-spike-data
 
-https://uk.mathworks.com/learn/tutorials/matlab-onramp.html
+- https://uk.mathworks.com/learn/tutorials/matlab-onramp.html
