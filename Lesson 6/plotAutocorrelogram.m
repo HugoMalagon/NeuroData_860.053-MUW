@@ -42,8 +42,7 @@ function plotAutocorrelogram(STMtx, Neuron_ID, binSize, maxLag)
     zeroIdx = find(lags == 0);
     acorr(zeroIdx) = 0;
 
-    % --- Plot ---
-    figure;
+
     %bar(lags * 1000, acorr, 'BarWidth', 1, 'FaceColor', [0.2 0.2 0.2]);
     bar(lags*1000, acorr, 'BarWidth', 1)
     xlabel('Lag (ms)');
