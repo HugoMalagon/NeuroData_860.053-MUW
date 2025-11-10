@@ -14,9 +14,9 @@ By the end of Lesson 6, you will be able to:
 
 ### Signal Fundamentals
 
-Explain the relationship between sampling frequency, signal reconstruction, and aliasing.
+- Explain the relationship between sampling frequency, signal reconstruction, and aliasing.
 
-Identify when a signal becomes distorted due to insufficient sampling.
+- Identify when a signal becomes distorted due to insufficient sampling.
 
 ### Signal Visualization & Features
 
