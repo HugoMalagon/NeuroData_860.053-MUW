@@ -29,8 +29,8 @@ For guidance on using VirtualBox, please refer to the following resources:
 
 Additionally, please download the prepared Virtual Machine (approx. 10 GB, ensure at least 20 GB free space):
 
-- [VM Download Link](https://filesender.aco.net/?s=download&token=4e19de24-a6de-4f25-bbd1-95b51ee090cd)
-
+- [VM Download Link](https://filesender.aco.net/?s=download&token=100542ef-1282-4bce-94da-dd02ac8f0934)
+*NOTE: Link valid untill 26.11.2025*
 Once VirtualBox is installed and the files are downloaded, open VirtualBox and **import the OVA file**.
 Helpful guide: [How to Import OVA to VirtualBox](https://www.youtube.com/watch?v=PJdsjpZmMMo)
 
@@ -53,6 +53,7 @@ Please check if the VM starts; troubleshooting will be available at the beginnin
     - [Video Guide](https://www.youtube.com/watch?v=I5WIMX4LK8M)
 2. Download data instead of the Virtual Machine:
     - [Data Link](https://filesender.aco.net/?s=download&token=d56276eb-978c-4697-9886-1131af5064fe)
+    - *NOTE: Link valid untill 14.11.2025*
 3. Unpack the data.
 4. Open **Processing_Interpretation_Data_macos.Rproj** in RStudio.
 5. In the RStudio console, type:
@@ -81,6 +82,7 @@ If you prefer a lightweight setup:
 1. Install **R version 4.5.1** and **RStudio**.
 2. Download the packed lectures:
     - [Linux Data Link](https://filesender.aco.net/?s=download&token=aa4dae03-f1c2-49be-a0a5-745d07e4a5f7)
+    - *NOTE: Link valid untill 14.11.2025*
 3. Unpack the data.
 4. Open **Processing_Interpretation_Data_linux.Rproj**.
 5. In RStudio, run:
