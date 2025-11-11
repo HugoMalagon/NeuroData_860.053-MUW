@@ -30,7 +30,9 @@ For guidance on using VirtualBox, please refer to the following resources:
 Additionally, please download the prepared Virtual Machine (approx. 10 GB, ensure at least 20 GB free space):
 
 - [VM Download Link](https://filesender.aco.net/?s=download&token=100542ef-1282-4bce-94da-dd02ac8f0934)
+
 *NOTE: Link valid untill 26.11.2025*
+
 Once VirtualBox is installed and the files are downloaded, open VirtualBox and **import the OVA file**.
 Helpful guide: [How to Import OVA to VirtualBox](https://www.youtube.com/watch?v=PJdsjpZmMMo)
 
