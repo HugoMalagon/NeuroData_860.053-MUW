@@ -1,0 +1,268 @@
+---
+title: "Lesson 1"
+author: "Lukasz Piszczek, Kaja Moczulska"
+date: "2025-10-10"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+# Set chunk options so R code and output will appear in the rendered document.
+knitr::opts_chunk$set(echo = TRUE)
+
+# Load required libraries for data manipulation, visualization, analysis.
+library(gridExtra)    # For arranging multiple plots side by side
+library(tidyverse)    # For data wrangling and plotting
+library(broom)        # For tidying model output (regression, PCA)
+library(NeuroDataSets)# Datasets for neuroscience applications
+library(dlookr)       # For data diagnostics and summaries
+library(uwot)         # For UMAP, a dimensionality reduction method
+library(caret)        # For machine learning data partitioning
+library(class)        # For k-NN classifier
+#library(factoextra)  # (optional) for clustering visualization
+```
+
+# Load Data
+
+Purpose: Load Alzheimer's gene expression data and metadata; clean and reshape for analysis.
+
+Here we will work on Alzheimers data:
+Microarray analysis of postmortem human brains with presence or absence of Alzheimer's disease
+
+**Format**
+A tibble with gene expression, brain regions, patient data.
+**Source**
+Data taken from https://europepmc.org/article/MED/23595620
+https://www.ebi.ac.uk/gxa/experiments/E-GEOD-36980/Downloads
+
+```{r data}
+# Select genes of interest for analysis (defined by biological relevance or prior studies).
+genes <- c(
+  "MET", "PCSK1", "RGS4", "HS3ST2", "NPTX2", "NEUROD6",
+  "RAB27B", "IL12RB2", "FAM19A1", "HCN1", "GABRA1", "KIAA1045", "PRKCB", "HPCA", "PTPN3", "SERPINF1",
+  "WIPF3", "GFRA2", "HS6ST3", "PARM1", "NUAK1", "NRN1", "VEGFA", "ENC1", "RAB15", "SATB1", "PHACTR1",
+  "ANO3", "HOPX", "ELAVL4", "CPLX1", "C14orf83", "EHD3", "KIAA0746", "LINGO1", "KCNK9", "ACOT7", "MSC",
+  "PDE2A", "HCN2", "FABP3", "SLC6A7", "RGS7", "WBSCR17", "ATP2B2", "NEFH", "RIT2", "EGR3", "GNG3",
+  "NPTXR", "ARHGDIG", "CCKBR", "ST8SIA5", "SLC6A17", "ATRNL1", "LDB2", "SYT13", "SMYD2",
+  "MAN1A1", "GABRG2", "STMN2", "L1CAM", "C12orf5", "HOMER1", "SYT7", "TRIM36", "EFNA3", "DLGAP1",
+  "GABBR2", "FRMPD4", "RIMBP2", "INA", "AACS", "STRBP", "CHRNB2", "ATP2B3", "TTYH3", "RTN4RL1",
+  "SYT5", "GABRA4", "DAGLA", "CDH22", "SEZ6L2", "SLC17A7", "NEFL", "OXR1", "ADAM11",
+  "LIPH", "NAP1L2", "SYNGR3", "TOM1L1", "KCNJ6", "UQCRH", "STX1B", "GABRA5", "ACOT8", "ORAI2",
+  "SNAP25", "WBSCR17", "PPP1R16B", "TOLLIP", "LARGE", "GLRB", "PTPRN", "SYT4", "DUSP6", "DOC2A",
+  "SPTBN2", "NEDD4L", "POPDC3", "SYN1", "PREP", "MMP17",
+  "QPCT", "CPT1C", "NDFIP2", "ARL15", "DPF1", "HPRT1", "ATP6V1G2", "SH3RF1", "KCNF1", "PTPN5",
+  "MAPK9", "PFKP", "PTPRN2", "TLN2", "GDAP1L1", "ISLR2", "ADAP1", "C3orf14", "TSPAN5", "APBA2",
+  "RNF165", "SLC7A14", "TOMM22", "FNDC5", "YWHAG", "KRT222",
+  "SLC7A11", "GOLIM4",
+  "HSD17B7P2", "LAMA4",
+  "IFLTD1", "PCDHB4", "COL21A1", "CNGA3", "FAM36A",
+  "EGF", "FAP", "FIBIN", "SNTB1", "TAS2R31",
+  "CA5B", "NCRNA00173",
+  "SSPN",
+  "ANGPT1", "B3GAT2", "VCAN", "GJA1", "VCAM1",
+  "ST6GALNAC2", "TXNIP", "ARRDC4", "WDR49", "AEBP1", "PIRT", "GALNTL2"
+)
+# Optionally: select a smaller subset for focused analysis.
+test_genes <- c("MET", "PCSK1", "PTPN3", "SERPINF1", "VEGFA", "NEFH", "EGR3", "HOMER1", "INA", "DAGLA", 
+  "CDH22", "NEFL", "TOM1L1", "TOLLIP", "SH3RF1", "TOMM22", "AEBP1", "TXNIP", "VCAM1", "ANGPT1",
+  "RGS4", "GABRA1", "GFRA2", "CPLX1", "KCNK9", "RGS7", "GABRG2", "STMN2", "L1CAM", "SYT7",
+  "SYT5", "GABRA4", "KCNJ6", "STX1B", "GABRA5", "SNAP25", "PTPRN", "SYT4", "DUSP6", "PTPN5",
+  "PTPRN2", "IL12RB2", "PRKCB", "WIPF3", "NRN1", "ENC1", "SATB1", "PHACTR1", "ELAVL4", "FABP3",
+  "AACS", "SPTBN2", "YWHAG")
+
+# Read normalized gene expression table. Drop unneeded columns; keep gene names.
+df <- read_delim(file = "./Input_data/E-GEOD-36980-A-AFFY-141-normalized-expressions.tsv") %>%
+  select(-`Gene ID`, -DesignElementAccession) %>%      # Remove Gene ID columns as not needed
+  rename(Gene = `Gene Name`) %>%                       # Rename for clarity
+  pivot_longer(cols = starts_with("GSM"),              # Reshape: aim is to have one row per patient
+    names_to = "Assay", values_to = "Gene_expression") %>%   
+  pivot_wider(names_from = Gene, values_from = Gene_expression, values_fn = mean) %>%
+  dplyr::select(Assay, any_of(genes))                  # Keep only selected genes
+
+         
+df_meta <- read_delim(file = "./Input_data/E-GEOD-36980-experiment-design.tsv") %>% 
+  dplyr::select(Assay, `Sample Characteristic[disease]`, `Sample Characteristic[sex]`, `Sample Characteristic[organism part]`) %>% 
+  rename(Class = `Sample Characteristic[disease]`, # Rename for readability
+         sex = `Sample Characteristic[sex]`,
+         Brain_Area = `Sample Characteristic[organism part]`) %>%  
+  mutate(Class = factor(Class), # Convert to categorical
+         sex = factor(sex),
+         Brain_Area = factor(Brain_Area))
+
+# Merge gene expression and metadata on assay ID to create full analysis table.
+df <- df %>% left_join(df_meta, ., by = "Assay") #%>% filter(Brain_Area == "hippocampus")
+
+```
+
+
+##Get basic information about the data frame
+```{r size}
+# Show dimensions of data frame
+dim(df)
+```
+how many rows is there? how many columns are there?
+
+```{r hepl}
+# check what the output means
+?dim
+```
+
+```{r size}
+# Show number of rows
+nrow(df)
+```
+```{r size}
+# Show number of columns
+ncol(df)
+```
+```{r size}
+# Show first (here 20) entries
+head(df, 20)
+```
+```{r size}
+# Show last (here 20) entries
+tail(df, 20)
+```
+
+## Ivestigate the data structure
+
+Lets investigate the data set
+
+```{r structure}
+# Show structure of the main data frame (column types, dimensions).
+str(df)
+```
+
+## get numeric vectors to compare
+
+```{r pull data on gene of interest for analysis}
+# choose a gene and save the expression data of this gene separately for AD and control patients
+gene_name <- 'NPTX2'
+
+normal_expr <- 
+    df %>%
+      filter(Class == 'normal') %>%
+      pull(gene_name)
+
+ad_expr <- 
+    df %>%
+      filter(Class == 'Alzheimers disease') %>%
+      pull(gene_name)
+print(normal_expr)
+print(ad_expr)
+```
+
+## basic statistics
+
+```{r mean}
+# calculate mean
+mean_n = mean(normal_expr)
+mean_ad = mean(ad_expr)
+print (mean_n)
+print (mean_ad)
+```
+```{r median}
+# calculate median
+median_n = median(normal_expr)
+median_ad = median(ad_expr)
+print (median_n)
+print (median_ad)
+```
+
+```{r t-test}
+# test difference between means (t-test)
+t.test(normal_expr, ad_expr)
+```
+
+```{r wilcox-test}
+# test difference between medians (wilcox-test 
+wilcox.test(normal_expr, ad_expr)
+```
+
+## intro to visual analytics
+#assess the data distribution using histograms
+
+```{r histogram normal}
+# plot a histogram for control sample with 8 bins
+hist(normal_expr, 8)
+```
+
+```{r histogram Alheimer's}
+# plot a histogram for control sample with 8 bins
+hist(ad_expr, 8)
+```
+
+##basic plots
+
+One of the most opular plots of all time is a bar plot. Let's see how it will represent our data
+```{r barplot}
+# barplot representing means for both samples
+barplot(c(mean(ad_expr), mean(normal_expr)))
+```
+
+The plot is difficult to read. Which sample is which? What gene is expressed? can we change it to favourite color?
+```{r barplot customised}
+# customised barplot representing means for both samples
+barplot(c(mean(ad_expr), mean(normal_expr)), 
+        main = 'NPTX2 expression', 
+        names.arg=c('AD', 'N'), 
+        col = "#FF1493")
+```
+To choose colors looks for color palettes like this one 
+https://r-charts.com/colors/
+
+The plot is now prettier, but still does not feel very informative. 
+Let's try box plot
+
+```{r boxplot}
+# box plot representing both samples
+boxplot(ad_expr, normal_expr)
+```
+
+```{r boxplot}
+# box plot representing both samples
+boxplot(ad_expr, normal_expr, main = 'NPTX2 expression', names=c('AD', 'N'), col = "#76EEC6")
+points(c(mean(ad_expr), mean(normal_expr)),col="red",pch=18)
+```
+##compare 2 genes on scatterplot
+
+```{r pull data on second gene and produce scatter plot for AD patients}
+# Show structure of the main data frame (column types, dimensions)
+gene_name <- 'LINGO1'
+
+normal_expr2 <- 
+    df %>%
+      filter(Class == 'normal') %>%
+      pull(gene_name)
+
+ad_expr2 <- 
+    df %>%
+      filter(Class == 'Alzheimers disease') %>%
+      pull(gene_name)
+
+#calculate correlation coefficient and plot a basic scatterplot to see if data is correlated
+cor_ad <- cor(ad_expr, ad_expr2)
+plot(ad_expr, ad_expr2)
+```
+
+##practical assesment
+Choose a gene from the dataset that was not used in the excercises. 
+Modify the code to pull the data on the expression of this gene in AD and 
+control patient and perform basic analysis as for NPTX2 including comparison 
+between normal and AD patients and testing if there is a significant difference 
+in expression levels. 
+
+In case you have trouble with modifying the code, let us know and we'll help!
+
+As an assessment kindly email following information: 
+1. name of the gene
+2. which test you used for comparison and why
+3. p-value
+4. are differences between the groups statistically different (use p=0.05 as a cut off)
+
+to:
+kaja.moczulska@meduniwien.ac.at
+or lukasz.piszczek@meduniwien.ac.at
+
+
+
+

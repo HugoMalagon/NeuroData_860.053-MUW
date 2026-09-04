@@ -1,0 +1,416 @@
+---
+title: "Lesson 2"
+author: "Lukasz Piszczek, Kaja Moczulska"
+date: "2025-10-10"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+# Set chunk options so R code and output will appear in the rendered document.
+knitr::opts_chunk$set(echo = TRUE)
+
+# Load required libraries for data manipulation, visualization, analysis.
+library(gridExtra)    # For arranging multiple plots side by side
+library(tidyverse)    # For data wrangling and plotting
+library(broom)        # For tidying model output (regression, PCA)
+library(NeuroDataSets)# Datasets for neuroscience applications
+library(dlookr)       # For data diagnostics and summaries
+library(uwot)         # For UMAP, a dimensionality reduction method
+library(caret)        # For machine learning data partitioning
+library(class)        # For k-NN classifier
+#library(factoextra)  # (optional) for clustering visualization
+```
+
+# Load Data
+
+Purpose: Load Alzheimer's gene expression data and metadata; clean and reshape for analysis.
+
+Here we will work on Alzheimers data:
+Microarray analysis of postmortem human brains with presence or absence of Alzheimer's disease
+
+**Format**
+A tibble with gene expression, brain regions, patient data.
+**Source**
+Data taken from https://europepmc.org/article/MED/23595620
+https://academic.oup.com/cercor/article/24/9/2476/319502
+https://www.ebi.ac.uk/gxa/experiments/E-GEOD-36980/Downloads
+
+```{r data}
+# Select genes of interest for analysis (defined by biological relevance or prior studies).
+genes <- c(
+  "MET", "PCSK1", "RGS4", "HS3ST2", "NPTX2", "NEUROD6",
+  "RAB27B", "IL12RB2", "FAM19A1", "HCN1", "GABRA1", "KIAA1045", "PRKCB", "HPCA", "PTPN3", "SERPINF1",
+  "WIPF3", "GFRA2", "HS6ST3", "PARM1", "NUAK1", "NRN1", "VEGFA", "ENC1", "RAB15", "SATB1", "PHACTR1",
+  "ANO3", "HOPX", "ELAVL4", "CPLX1", "C14orf83", "EHD3", "KIAA0746", "LINGO1", "KCNK9", "ACOT7", "MSC",
+  "PDE2A", "HCN2", "FABP3", "SLC6A7", "RGS7", "WBSCR17", "ATP2B2", "NEFH", "RIT2", "EGR3", "GNG3",
+  "NPTXR", "ARHGDIG", "CCKBR", "ST8SIA5", "SLC6A17", "ATRNL1", "LDB2", "SYT13", "SMYD2",
+  "MAN1A1", "GABRG2", "STMN2", "L1CAM", "C12orf5", "HOMER1", "SYT7", "TRIM36", "EFNA3", "DLGAP1",
+  "GABBR2", "FRMPD4", "RIMBP2", "INA", "AACS", "STRBP", "CHRNB2", "ATP2B3", "TTYH3", "RTN4RL1",
+  "SYT5", "GABRA4", "DAGLA", "CDH22", "SEZ6L2", "SLC17A7", "NEFL", "OXR1", "ADAM11",
+  "LIPH", "NAP1L2", "SYNGR3", "TOM1L1", "KCNJ6", "UQCRH", "STX1B", "GABRA5", "ACOT8", "ORAI2",
+  "SNAP25", "WBSCR17", "PPP1R16B", "TOLLIP", "LARGE", "GLRB", "PTPRN", "SYT4", "DUSP6", "DOC2A",
+  "SPTBN2", "NEDD4L", "POPDC3", "SYN1", "PREP", "MMP17",
+  "QPCT", "CPT1C", "NDFIP2", "ARL15", "DPF1", "HPRT1", "ATP6V1G2", "SH3RF1", "KCNF1", "PTPN5",
+  "MAPK9", "PFKP", "PTPRN2", "TLN2", "GDAP1L1", "ISLR2", "ADAP1", "C3orf14", "TSPAN5", "APBA2",
+  "RNF165", "SLC7A14", "TOMM22", "FNDC5", "YWHAG", "KRT222",
+  "SLC7A11", "GOLIM4",
+  "HSD17B7P2", "LAMA4",
+  "IFLTD1", "PCDHB4", "COL21A1", "CNGA3", "FAM36A",
+  "EGF", "FAP", "FIBIN", "SNTB1", "TAS2R31",
+  "CA5B", "NCRNA00173",
+  "SSPN",
+  "ANGPT1", "B3GAT2", "VCAN", "GJA1", "VCAM1",
+  "ST6GALNAC2", "TXNIP", "ARRDC4", "WDR49", "AEBP1", "PIRT", "GALNTL2"
+)
+# Optionally: select a smaller subset for focused analysis.
+test_genes <- c("MET", "PCSK1", "PTPN3", "SERPINF1", "VEGFA", "NEFH", "EGR3", "HOMER1", "INA", "DAGLA", 
+  "CDH22", "NEFL", "TOM1L1", "TOLLIP", "SH3RF1", "TOMM22", "AEBP1", "TXNIP", "VCAM1", "ANGPT1",
+  "RGS4", "GABRA1", "GFRA2", "CPLX1", "KCNK9", "RGS7", "GABRG2", "STMN2", "L1CAM", "SYT7",
+  "SYT5", "GABRA4", "KCNJ6", "STX1B", "GABRA5", "SNAP25", "PTPRN", "SYT4", "DUSP6", "PTPN5",
+  "PTPRN2", "IL12RB2", "PRKCB", "WIPF3", "NRN1", "ENC1", "SATB1", "PHACTR1", "ELAVL4", "FABP3",
+  "AACS", "SPTBN2", "YWHAG")
+
+# Read normalized gene expression table. Drop unneeded columns; keep gene names.
+df <- read_delim(file = "./Input_data/E-GEOD-36980-A-AFFY-141-normalized-expressions.tsv") %>%
+  select(-`Gene ID`, -DesignElementAccession) %>%      # Remove Gene ID columns as not needed
+  rename(Gene = `Gene Name`) %>%                       # Rename for clarity
+  pivot_longer(cols = starts_with("GSM"),              # Reshape: aim is to have one row per patient
+    names_to = "Assay", values_to = "Gene_expression") %>%   
+  pivot_wider(names_from = Gene, values_from = Gene_expression, values_fn = mean) %>%
+  dplyr::select(Assay, any_of(genes))                  # Keep only selected genes
+
+         
+df_meta <- read_delim(file = "./Input_data/E-GEOD-36980-experiment-design.tsv") %>% 
+  dplyr::select(Assay, `Sample Characteristic[disease]`, `Sample Characteristic[sex]`, `Sample Characteristic[organism part]`) %>% 
+  rename(Class = `Sample Characteristic[disease]`, # Rename for readability
+         sex = `Sample Characteristic[sex]`,
+         Brain_Area = `Sample Characteristic[organism part]`) %>%  
+  mutate(Class = factor(Class), # Convert to categorical
+         sex = factor(sex),
+         Brain_Area = factor(Brain_Area))
+
+# Merge gene expression and metadata on assay ID to create full analysis table.
+df <- df %>% left_join(df_meta, ., by = "Assay") #%>% filter(Brain_Area == "hippocampus")
+
+```
+
+## Ivestigate the data structure
+
+Lets investigate the data set
+
+```{r structure}
+# Show structure of the main data frame (column types, dimensions).
+str(df)
+```
+
+And use the *dlookr* library to do summaries
+```{r diagnose, echo=FALSE}
+# Generate summary statistics for the first 20 columns.
+summary_df <- diagnose(df[,1:20])
+head(summary_df)
+
+# Numeric summaries (mean, sd, missing)
+summary_numeric_df <- diagnose_numeric(df[,1:20])
+head(summary_numeric_df)
+
+# Categorical summaries (counts, frequencies)
+summary_cat_df <- diagnose_category(df[,1:20])
+head(summary_cat_df)
+```
+
+# Select and Standardize the Data
+Here we will select our variables, taking only numeric columns.
+As PCA works best on scaled data we will center and scale numeric columns:
+Explanation: We scale the numeric gene expression data for consistent distance measurement.
+
+```{r PCA_prep, echo=FALSE}
+# Select only numeric columns (gene expression values).
+df_numeric <- df %>% select(where(is.numeric))
+
+# Standardize each numeric feature: mean 0, unit SD. Essential for PCA or clustering.
+df_scaled <- df_numeric %>% mutate(across(everything(), ~ as.numeric(scale(.x, center = TRUE, scale = TRUE))))
+
+```
+
+# Perform PCA
+Run PCA
+What is it? PCA is a dimensionality reduction technique that transforms a large set of correlated variables into a smaller set of uncorrelated principal components. Each principal component captures the maximum possible variance from the data in decreasing order.
+Why use it? We use PCA to simplify complex gene expression data, highlight the main patterns, and make clusters or differences between healthy and Alzheimer’s patients easier to see and analyze.
+
+```{r PCA, echo=FALSE}
+# Run principal component analysis on scaled data.
+pca_result <- prcomp(df_scaled, center = FALSE, scale. = FALSE)
+summary(pca_result) # Print variance explained by each principal component.
+
+```
+
+## Scree Plot: Proportion of Variance Explained
+The scree plot helps visualize the variance explained by each component.
+
+```{r PCA, echo=FALSE, fig.width=10, fig.height=5}
+# Plot variance explained by each principal component (base plot).
+plot(pca_result)
+
+max_PCA_plot <- 5# ITerate here max 10?
+
+# More informative: Use ggplot to show individual and cumulative explained variance for first X PCs.
+explained_var <- pca_result$sdev^2 / sum(pca_result$sdev^2) * 100
+explained_df <- tibble(PC = paste0("PC", 1:length(explained_var)),
+                       variance = explained_var) %>% 
+  mutate(PC = factor(PC, levels = PC),
+         Cummulative_var = cumsum(variance)) # calculate cummulative sum
+
+ggplot(explained_df %>% slice(1:max_PCA_plot), 
+       aes(x = PC, y = variance)) +
+  geom_col(fill = "skyblue") +
+  ylab("% of Variance Explained") +
+  xlab("Principal Component") +
+  ggtitle("Scree Plot: Proportion of Variance Explained by Each PC") +
+  theme_bw()
+
+ggplot(explained_df %>% slice(1:max_PCA_plot),
+       aes(x = PC, y = Cummulative_var)) +
+  geom_col(fill = "skyblue") +
+  ylab("Cummulative Variance Explained") +
+  xlab("Principal Component") +
+  ggtitle("Scree Plot: Cummulative Variance Explained") +
+  theme_bw()
+
+
+```
+
+## Plot rotations
+Next, we plot the rotation matrix. The rotation matrix is stored as pca_result$rotation, but here we’ll extract it using the tidy() function from broom. When applied to prcomp objects, the tidy() function takes an additional argument matrix, which we set to matrix = "rotation" to extract the rotation matrix.
+Purpose: See which genes contribute most to each principal component.
+
+```{r PCA_plot, echo=FALSE, fig.width=10, fig.height=5}
+# Extract PCA rotation matrix, which shows how features (genes) load on PCs.
+pca_rotations_df <- pca_result %>%
+  tidy(matrix = "rotation") %>% 
+  pivot_wider(names_from = "PC", names_prefix = "PC", values_from = "value") %>% # make the table longer, as wee need PC as columns
+  select(column, PC1, PC2)
+
+# Find top 5 positive/negative contributors for PC1/PC2.
+pca_rotations_filtered_df <- pca_rotations_df %>%
+  slice_max(order_by = PC1, n = 5, with_ties = FALSE) %>%
+  bind_rows(
+    pca_rotations_df %>%
+      slice_min(order_by = PC1, n = 5, with_ties = FALSE),
+    pca_rotations_df %>%
+      slice_max(order_by = PC2, n = 5, with_ties = FALSE),
+    pca_rotations_df %>%
+      slice_min(order_by = PC2, n = 5, with_ties = FALSE),
+  ) %>%
+  ungroup() %>% unique()
+
+arrow_style <- arrow(
+  angle = 20, ends = "first", type = "closed", length = grid::unit(8, "pt")
+)
+
+# Plot gene loadings as arrows for PC1/PC2, names highlighted.
+pca_rotations_filtered_df %>%
+  ggplot(aes(PC1, PC2)) +
+  geom_segment(xend = 0, yend = 0, arrow = arrow_style) +
+  geom_text(
+    aes(label = column),
+    hjust = 1, nudge_x = 0, 
+    color = "#440154"
+  ) + theme_bw()
+
+```
+
+Purpose: Visualize how patients cluster by principal components. Color points by diagnosis.
+```{r PCA_plot, echo=FALSE, fig.width=10, fig.height=6}
+# basic plot
+pca_with_df <- pca_result %>%
+  augment(df) # Add original data to PCA result
+
+# Scatterplot: patients colored by disease status in PC1 vs PC2 space.
+plot0<- ggplot(pca_with_df, aes(.fittedPC1, .fittedPC2, color = Class)) + 
+  geom_point(size = 3) +
+  scale_color_manual(
+    values = c(`Alzheimers disease` = "#5ec962", normal = "#3b528b")
+  ) + theme_bw()
+plot0
+```
+
+# UMAP
+What is it? UMAP is a nonlinear dimensionality reduction method that projects high-dimensional data into a lower-dimensional space (usually 2D), focusing on preserving both global structure and local relationships.
+Why use it? UMAP enables clearer visualization of gene expression patterns, helping us spot distinct clusters of patient groups that may not be obvious with linear methods like PCA.
+Purpose: Alternative dimensionality reduction (good for nonlinear structures).
+```{r UMAP_run, echo=FALSE, fig.width=10, fig.height=5}
+# Run UMAP
+set.seed(42)
+umap_res <- umap(df_scaled , 
+                 n_components = 2,
+                 n_neighbors = 8, min_dist = 0.1, metric = "euclidean") # Change here n_neighbours and min_dis to check if better
+
+# Make table for plotting, add diagnosis label for each sample.
+umap_df <- as_tibble(umap_res, .name_repair = "minimal") %>%
+  setNames(c("UMAP1", "UMAP2")) %>%
+  mutate(clinical_diagnosis = df$Class)
+
+```
+
+## Plot UMAP
+
+```{r UMAP_run, echo=FALSE, fig.width=7, fig.height=6}
+# Plot UMAP results colored by diagnosis
+plot1 <- ggplot(umap_df, aes(UMAP1, UMAP2, color = clinical_diagnosis)) +
+  labs(title = "UMAP Projection of Alzheimer’s Data",
+       color = "Diagnosis")  + 
+  geom_point(size = 3) +
+  scale_color_manual(
+     values = c(`Alzheimers disease` = "#5ec962", normal = "#3b528b")
+  ) + theme_bw()
+plot1
+```
+## UMAP on PCA
+Purpose: Apply UMAP after reducing to 4 principal components. May improve clustering.
+```{r UMAP_run, echo=FALSE, fig.width=10, fig.height=5}
+# Run UMAP
+set.seed(42)
+umap_PCA_res <- umap(pca_with_df %>% select(starts_with(".fitted")), 
+                 n_components = 2, pca = 4,
+                 n_neighbors = 8, min_dist = 0.1, metric = "euclidean") # Change here n_neighbours and min_dis to check if better
+
+# Combine UMAP results with diagnosis labels
+umap_PCA_df <- as_tibble(umap_PCA_res, .name_repair = "minimal") %>%
+  setNames(c("UMAP1", "UMAP2")) %>%
+  mutate(clinical_diagnosis = df$Class)
+
+```
+### Plot UMAP on PCA
+
+```{r UMAP_run, echo=FALSE, fig.width=20, fig.height=5}
+# Plot UMAP results colored by diagnosis
+plot2 <- ggplot(umap_PCA_df, aes(UMAP1, UMAP2, color = clinical_diagnosis)) +
+  labs(title = "UMAP-PCA Projection of Alzheimer’s Data",
+       color = "Diagnosis")  + 
+  geom_point(size = 3) +
+  scale_color_manual(
+    values = c(`Alzheimers disease` = "#5ec962", normal = "#3b528b")
+  ) + theme_bw()
+
+plot2A <- ggplot(umap_PCA_df, aes(UMAP1, UMAP2, color = clinical_diagnosis, shape = df$Brain_Area)) +
+  labs(title = "UMAP-PCA Projection of Alzheimer’s Data",
+       color = "Diagnosis")  + 
+  geom_point(size = 3) +
+  scale_color_manual(
+    values = c(`Alzheimers disease` = "#5ec962", normal = "#3b528b")
+  ) + theme_bw()
+
+grid.arrange(plot1, plot2, plot2A, ncol=3)
+```
+
+# k-means Clustering (Unsupervised)
+What is it? k-means is an unsupervised learning algorithm that divides data into k clusters based on similarity, by minimizing the distance between each point and the center of its assigned cluster.
+Why use it? In gene expression analysis, k-means helps automatically identify groups (clusters) of patients that share similar gene profiles, potentially separating healthy individuals from those with Alzheimer’s disease without using diagnosis labels.
+Purpose: Group patients based on gene expression, without using diagnosis labels.
+
+### K-means K evaluation
+
+
+We run k-means clustering 10 times from k = 1 to k = 10.
+WSS measures compactness of clusters; the "elbow" point in the scree plot suggests optimal cluster number.
+```{r K-means_K, echo=FALSE, fig.width=15, fig.height=5}
+# Range of k values to evaluate
+k_values <- 1:10
+
+# Calculate total within-cluster sum of squares (WSS) for each k
+wss <- map_dbl(k_values, function(k) {
+  km <- kmeans(df_scaled, centers = k, nstart = 25)
+  km$tot.withinss
+})
+
+# Create scree (elbow) plot
+wss_df <- tibble(k = k_values, WSS = wss)
+
+ggplot(wss_df, aes(x = k, y = WSS)) +
+  geom_line(color = "steelblue", linewidth = 1.2) +
+  geom_point(color = "steelblue", size = 3) +
+  scale_x_continuous(breaks = k_values) +
+  labs(title = "Scree Plot for k-means Clustering",
+       x = "Number of Clusters (k)",
+       y = "Total Within-Cluster Sum of Squares (WSS)") +
+  theme_minimal()
+
+
+```
+
+## Run k-means
+
+```{r K-means, echo=FALSE, fig.width=15, fig.height=5}
+set.seed(42)
+k <- 2 # Iterate here
+kmeans_res <- kmeans(df_scaled, centers = k) # you run the k-means on the original data not UMAP projection
+df_kmeans <- umap_PCA_df %>% mutate(cluster = factor(kmeans_res$cluster))
+
+# Run k-means clustering on the first 6 PCA components
+n_PCA <- 3# Iterate here
+kmeans_res_PCA <- kmeans(pca_with_df %>% select(one_of(paste0(".fittedPC", 1:n_PCA))), centers = k) # you run the k-means on the original data not UMAP projection
+df_kmeans_PCA <- umap_PCA_df %>% mutate(cluster = factor(kmeans_res_PCA$cluster))
+
+
+plot3 <- ggplot(df_kmeans, aes(UMAP1, UMAP2, color = cluster)) +
+  labs(title = "K-means clustering",
+       color = "Diagnosis")  + 
+  geom_point(size = 3) +
+  scale_color_viridis_d() + theme_bw()
+
+# Plot clusters on UMAP-PCA visualization
+plot4 <- ggplot(df_kmeans_PCA, aes(UMAP1, UMAP2, color = cluster)) +
+  labs(title = "K-means clustering on PCA",
+       color = "Diagnosis")  + 
+  geom_point(size = 3) +
+  scale_color_viridis_d() + theme_bw()
+
+grid.arrange(plot2, plot3, plot4, ncol=3)
+
+
+```
+# K-NN
+What is it? k-NN is a supervised classification technique that predicts the category of a sample by looking at the 'k' closest samples in the data and assigning the most common class among neighbors.
+Why use it? k-NN allows us to test whether patterns in gene expression can reliably distinguish between healthy and Alzheimer’s patients, using known labels on part of the data to predict the rest.
+Purpose: Predict diagnosis using gene expression profiles (supervised learning).
+```{r K-NN, echo=FALSE, fig.width=15, fig.height=5}
+set.seed(42)
+
+train_index <- createDataPartition(df$Class, p = 0.5, list = FALSE) #Iterate p for different train:test ratio
+train <- df_scaled[train_index, ]
+test <- df_scaled[-train_index, ]
+train_labels <- df$Class[train_index]
+test_labels <- df$Class[-train_index]
+
+k_nn <- 2 # ITerate here for different radius
+knn_pred <- knn(train, test, train_labels, k = k_nn)
+
+# Visualize k-NN predictions in PCA space
+test_pca <- umap_PCA_df[-train_index, ]
+test_pca <- test_pca %>% mutate(pred = knn_pred, true = test_labels)
+
+plot5<- ggplot(test_pca, aes(UMAP1, UMAP2, color = pred)) +
+  labs(title = "k-NN Classification (Supervised)",
+       color = "Prediction")  + 
+  geom_point(size = 3) +
+  scale_color_manual(
+    values = c(`Alzheimers disease` = "#5ec962", normal = "#3b528b")
+  ) + theme_bw()
+
+
+grid.arrange(plot2, plot5, ncol=2)
+
+
+```
+
+##practical assesment
+
+As an assessment kindly email following information: 
+1. How many PCA's is needed to reach over 80% variance explained in our data set?
+2. How does the n_neighbors parameter in UMAP affect the plots?
+3. what is the main difference between k-means and k-nn and in which case could you use them?
+4. what is a sensible k parameter in k-nn to choose?
+
+to:
+kaja.moczulska@meduniwien.ac.at
+or lukasz.piszczek@meduniwien.ac.at
