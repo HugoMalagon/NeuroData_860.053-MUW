@@ -1,91 +1,62 @@
-# Lesson 6 — Understanding and Visualizing Signals in Neuroscience
+# Lesson 5 — Working with Variables
 
 Processing and Interpretation of Neuroscience Data
 
 ## Overview
 
-Lesson 6 introduces fundamental signal-processing concepts used throughout neuroscience data analysis. Through hands-on MATLAB exercises, you will explore how sampling frequency affects the fidelity of signals, learn to detect peaks, compute power spectra, apply filters, quantify events, and perform basic statistical comparisons. You will also work with real neuronal spiking data using tools from the mlib6 toolbox.
+This module introduces core MATLAB concepts through hands-on mini-exercises tailored to neuroscience data workflows. You’ll create and inspect variables, practice vectorized operations, index and slice arrays, import small datasets, run quick statistics, and make sanity-check plots. You’ll also get a gentle tour of scripts, functions, flow control, and common plotting patterns you’ll reuse throughout the course.
 
-The lesson combines conceptual explanations with guided MATLAB code cells and individual exercises, encouraging intuition-building through visualization and experimentation.
+The live script is self-contained: if no data are present, it generates small demo files and tables so you can run everything end-to-end.
 
-## Learning Goals
+## Learning goals
 
-By the end of Lesson 6, you will be able to:
+By the end of Lesson 5 you will be able to:
 
-### Signal Fundamentals
+Explain MATLAB’s “everything is an array” model (scalars, vectors, matrices).
 
-- Explain the relationship between sampling frequency, signal reconstruction, and aliasing.
+Create, inspect, and manipulate arrays; understand size, length, and numel.
 
-- Identify when a signal becomes distorted due to insufficient sampling.
+Apply vectorized math and element-wise vs. matrix operations.
 
-### Signal Visualization & Features
+Index and slice arrays with ranges, logical masks, and row/column access.
 
-- Plot time-series signals and visually describe their structure.
+Import/export small datasets (MAT, CSV, Excel) and check basic data health.
 
-- Detect peaks in noisy signals using MATLAB’s findpeaks function, adjusting thresholds and constraints.
+Compute quick stats and produce sanity-check plots for time series.
 
-- Understand how noise influences feature detection.
+Write simple scripts and functions; use loops and basic if/else.
 
-### Spike data properties
+Organize and save results (tables, figures, MAT files).
 
-- Understanding autocorrelograms of spikes from single neurons
-
-### Statistics for Signal Comparison
-
-- Run paired and unpaired t-tests.
-
-- Perform one-way ANOVA.
-
-- Visualize group comparisons with boxplots and annotate significance.
-
-### Spike Data: Raster Plots & PSTHs
-
-- Use the legacy mlib6 toolbox to load and visualize neuronal spike trains.
-
-- Generate raster plots and peristimulus time histograms (PSTHs).
-
-- Interpret neuronal responses to events or task actions.
-
-- Identify neurons responsive to reward or cue-related epochs.
+Basic plotting.
 
 ## Prerequisites
 
-- MATLAB (R2019b or newer recommended).
+MATLAB (R2019b or newer recommended). No toolboxes required for core parts.
 
-- mlib6 toolbox (included in the lesson folder — be sure to Add to Path in MATLAB).
+Very basic command-line familiarity (running sections in Live Editor).
 
-- Basic familiarity with MATLAB Live Scripts.
+## How to use this module
 
-- Concepts covered in Lesson 5 (arrays, plotting, basic operations).
+Open the live script Lesson5_Students_LiveScript.mlx in MATLAB.
 
-## How to Use This Module
+Use f9 to run code parts top-to-bottom.
 
-1. Open Lesson6_Students_LiveScript.mlx in MATLAB.
+Watch outputs in the Command Window, variables in the Workspace, and files in the Current Folder.
 
-2. Use F9 to run each code section sequentially.
+When you see Tasks / Exercises, normally labelled "FOR YOU!!" type your answers on another new script
 
-3. Visualize outputs in the Live Editor figure panels.
+# Acknowledgments
 
-4. For each Question and Exercise (e.g., L6-Q1.1, L6-E.2), write your answers in a separate script.
+This module follows the course structure for Processing and Interpretation of Neuroscience Data (860.053-MUW), Day 5 (MATLAB Basics & Data Exploration), and prepares you for later blocks on time series, events, modeling, and calcium imaging.
+This module is inspired in personal work from Vered Kellner and Hugo Malagon, in addition to some resources listed here.
+## Resources used to create the module:
+ChatGPT
 
-5. For PSTH/raster analysis:
+https://eng.ox.ac.uk/matlab/training/
 
-    - Ensure the folder mlib6 is added to your MATLAB path.
+https://uk.mathworks.com/learn/tutorials/matlab-onramp.html   --> (Check this)
 
-    - Explore the documentation using help mraster and help mpsth.
+https://de.mathworks.com/matlabcentral/cody/problems
 
-## Acknowledgments
 
-This lesson is adapted from material prepared by Vered Kellner and Hugo Malagon Vina for Processing and Interpretation of Neuroscience Data (860.053-MUW). It extends the Day 5 module into real-world signal processing, neuronal feature detection, and event-related analyses.
-
-## Resources Used to Create This Module
-
-- ChatGPT
-
-- MATLAB documentation (signal processing, PSD estimation, filtering)
-
-- mlib6 toolbox for spike-data analysis
-
-- https://de.mathworks.com/matlabcentral/fileexchange/37339-mlib-toolbox-for-analyzing-spike-data
-
-- https://uk.mathworks.com/learn/tutorials/matlab-onramp.html

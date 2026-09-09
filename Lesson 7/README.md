@@ -1,90 +1,91 @@
-# Lesson 7 — Reward Prediction from Neural Population Activity
+# Lesson 6 — Understanding and Visualizing Signals in Neuroscience
 
 Processing and Interpretation of Neuroscience Data
 
 ## Overview
 
-Lesson 7 introduces linear regression models for decoding behavior from neural activity.
-Using real recordings from the prelimbic cortex of mice performing a probabilistic choice task, you will learn how to:
+Lesson 6 introduces fundamental signal-processing concepts used throughout neuroscience data analysis. Through hands-on MATLAB exercises, you will explore how sampling frequency affects the fidelity of signals, learn to detect peaks, compute power spectra, apply filters, quantify events, and perform basic statistical comparisons. You will also work with real neuronal spiking data using tools from the mlib6 toolbox.
 
-- extract firing rates from spike-time matrices
-
-- align neural data to behavioral events
-
-- build single-neuron and multi-neuron regressions
-
-- evaluate prediction accuracy
-
-- compare training vs. testing performance
-
-- identify neurons with the strongest predictive weights
-
-- estimate how prediction improves as population size increases
-
-- perform cross-validated “best neuron” analyses
-
-- By the end of this lesson you will have a full workflow for population-level encoding analysis using supervised regression.
+The lesson combines conceptual explanations with guided MATLAB code cells and individual exercises, encouraging intuition-building through visualization and experimentation.
 
 ## Learning Goals
 
-By the end of Lesson 7, you will be able to:
+By the end of Lesson 6, you will be able to:
 
-### Firing Rate Quantification
+### Signal Fundamentals
 
-- Compute firing rates in user-defined analysis windows tied to behavioral events.
+- Explain the relationship between sampling frequency, signal reconstruction, and aliasing.
 
-- Build trial-by-trial firing rate vectors for single neurons and firing-rate matrices for populations.
+- Identify when a signal becomes distorted due to insufficient sampling.
 
-- Handle missing or NaN trials appropriately.
+### Signal Visualization & Features
 
-### Single-Neuron Linear Regression
+- Plot time-series signals and visually describe their structure.
 
-- Fit a linear model (fitlm) 
+- Detect peaks in noisy signals using MATLAB’s findpeaks function, adjusting thresholds and constraints.
 
-- Interpret model coefficients, predictions, and accuracy.
+- Understand how noise influences feature detection.
 
-- Visualize model fit, scatter plots, and classification thresholds.
+### Spike data properties
 
-### Multi-Neuron Linear Regression
+- Understanding autocorrelograms of spikes from single neurons
 
-- Combine firing rates from multiple neurons into a multi-predictor linear model.
+### Statistics for Signal Comparison
 
-- Inspect learned weights to determine which neurons contribute most.
+- Run paired and unpaired t-tests.
 
-- Analyze how model accuracy changes as you add neurons.
+- Perform one-way ANOVA.
 
-### Model Generalization (Training vs. Test Data)
+- Visualize group comparisons with boxplots and annotate significance.
 
-- Split trials into training and testing sets (e.g., 50/50).
+### Spike Data: Raster Plots & PSTHs
 
-- Evaluate overfitting by comparing training vs. test accuracy.
+- Use the legacy mlib6 toolbox to load and visualize neuronal spike trains.
 
-- Plot prediction accuracy as a function of population size.
+- Generate raster plots and peristimulus time histograms (PSTHs).
 
-### Cross-Validation
+- Interpret neuronal responses to events or task actions.
 
-- Perform K-fold cross-validation to estimate neuron-by-neuron predictive accuracy.
+- Identify neurons responsive to reward or cue-related epochs.
 
-- Identify neurons that reliably encode reward information.
-
-- Compare predictive performance to chance level.
-
-### Prerequisites
+## Prerequisites
 
 - MATLAB (R2019b or newer recommended).
 
-- Concepts from Lessons 5 and 6 (arrays, plotting, firing rates, linear models).
+- mlib6 toolbox (included in the lesson folder — be sure to Add to Path in MATLAB).
 
-- Understanding of PSTHs and spike-event alignment (from earlier lessons).
+- Basic familiarity with MATLAB Live Scripts.
+
+- Concepts covered in Lesson 5 (arrays, plotting, basic operations).
+
+## How to Use This Module
+
+1. Open Lesson6_Students_LiveScript.mlx in MATLAB.
+
+2. Use F9 to run each code section sequentially.
+
+3. Visualize outputs in the Live Editor figure panels.
+
+4. For each Question and Exercise (e.g., L6-Q1.1, L6-E.2), write your answers in a separate script.
+
+5. For PSTH/raster analysis:
+
+    - Ensure the folder mlib6 is added to your MATLAB path.
+
+    - Explore the documentation using help mraster and help mpsth.
 
 ## Acknowledgments
 
-This lesson builds on material prepared by Vered Kellner and Hugo Malagon Vina for Processing and Interpretation of Neuroscience Data (860.053-MUW).
-It extends their neural encoding and spike-train analysis modules to include supervised regression, population decoding, and model validation.
+This lesson is adapted from material prepared by Vered Kellner and Hugo Malagon Vina for Processing and Interpretation of Neuroscience Data (860.053-MUW). It extends the Day 5 module into real-world signal processing, neuronal feature detection, and event-related analyses.
 
 ## Resources Used to Create This Module
 
 - ChatGPT
 
-- MATLAB documentation (linear regression, data handling, statistical modeling)
+- MATLAB documentation (signal processing, PSD estimation, filtering)
 
+- mlib6 toolbox for spike-data analysis
+
+- https://de.mathworks.com/matlabcentral/fileexchange/37339-mlib-toolbox-for-analyzing-spike-data
+
+- https://uk.mathworks.com/learn/tutorials/matlab-onramp.html

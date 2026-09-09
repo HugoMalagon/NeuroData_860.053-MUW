@@ -9,11 +9,16 @@ From this page, you go to the "code" button and click on the down arrow. It shou
 
 Welcome to the lecture of the MUW on Processing and Interpretation of Neuroscience Data.
 
-This repository is fundamental for the lessons # 5 to 8.
+## Lesson 1-5
 
-However, Info about the lesson # 1 to # 5 can be found in the in the folder **Lessons 1 - 5**. Please go over this and make sure that you install **Docker** on your computer prior the first lecture and pull the **haubensaklab/seurat-rstudio:latest** image.
+Info about the lesson # 1 to # 5, scritps and needed data can be found in the in the folder **Lessons 1 - 5**. 
+Please go over this and make sure that you install **Docker Desktop** on your computer prior the first lecture and pull the **haubensaklab/seurat-rstudio:latest** image. See documents in the folder.
 
-Before Session 6 (November 11, 2025), please ensure that you have MATLAB installed and ready to use.
+## Lesson 6-10
+
+This repository is fundamental for the lessons # 6 to 10. Before Session 6 (November 11, 2025), please ensure that you have MATLAB installed and ready to use.
+
+# Matlab Installation
 
 ## **Step 1: Create a MathWorks Account**
 
