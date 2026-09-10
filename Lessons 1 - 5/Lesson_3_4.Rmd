@@ -23,7 +23,7 @@ knitr::knit_hooks$set(time_it = local({
 }))
 knitr::opts_chunk$set(
   tidy = 'styler',
-  message = FALSE,
+  message = TRUE,
   warning = FALSE,
   fig.width = 10,
   time_it = TRUE,
@@ -59,7 +59,7 @@ just as modifiable example if you would like to use another data set.  This exam
 will work with mapped datasets. If the data is published as raw data (before genome mapping)
 then you would need to do this step as well. 
 
-```{r load data}
+```{r load data raw}
 #https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM5067109
 #expression_matrix <- ReadMtx(mtx = "C:/Users/Kaja Moczulska/Downloads/GSM5067109_EKO_matrix.mtx.gz",
 #                             cells = "C:/Users/Kaja Moczulska/Downloads/GSM5067109_EKO_barcodes.tsv.gz",
@@ -92,8 +92,9 @@ Seurat allows you to easily explore QC metrics and filter cells based on any use
 nFeatures: number of unique genes detected in a cell
 nCount: total number of RNA molecules detected in that same cell
 
-```{r load data}
+```{r load data all}
 #load datasets
+setwd("~/data")
 Seurat_AD <- LoadSeuratRds('./Input_data/Eko_hippo.rds')
 Seurat_WT <- LoadSeuratRds('./Input_data/WT_hippo.rds')
 condition <- vector(mode="character", length=length(Seurat_AD$orig.ident))
@@ -107,9 +108,9 @@ Seurat_WT <- AddMetaData(object = Seurat_WT, metadata = condition, col.name = "c
 rm(condition)
 ```
 
-```{r mito}
+```{r mito wt}
 # The [[ operator can add columns to object metadata. This is a great place to stash QC stats
-Seurat_AD[["percent.mt"]] <- PercentageFeatureSet(Seurat_AD, pattern = "^mt-")
+Seurat_WT[["percent.mt"]] <- PercentageFeatureSet(Seurat_WT, pattern = "^mt-")
 ```
 
 <details>
@@ -117,9 +118,9 @@ Seurat_AD[["percent.mt"]] <- PercentageFeatureSet(Seurat_AD, pattern = "^mt-")
 
 * The number of unique genes and total molecules are automatically calculated during `CreateSeuratObject()`
     + You can find them stored in the object meta data
-```{r qc}
+```{r qc wt}
 # Show QC metrics for the first 5 cells
-head(Seurat_AD@meta.data, 5)
+head(Seurat_WT@meta.data, 5)
 ```
 </details>
 \  
@@ -127,57 +128,7 @@ head(Seurat_AD@meta.data, 5)
 In the example below, we visualize QC metrics, taht we will use  to filter out cells.
 
     
-```{r qc2, fig.height=7, fig.width=13}
-
-#Visualize QC metrics as a violin plot
-VlnPlot(Seurat_AD, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3)
-
-# FeatureScatter is typically used to visualize feature-feature relationships, but can be used for anything calculated by the object, i.e. columns in object metadata, PC scores etc.
-
-plot1 <- FeatureScatter(Seurat_AD, feature1 = "nCount_RNA", feature2 = "percent.mt")
-plot2 <- FeatureScatter(Seurat_AD, feature1 = "nCount_RNA", feature2 = "nFeature_RNA")
-plot1 + plot2
-
-```
-## Filter out the bad quality cells 
-
-* We filter cells that have unique feature counts that are too high (too low are already filtered out)
-* We filter cells that have low mitochondrial counts
-
-```{r filtering accoding to visual analysis of the plots}
-Seurat_AD <- subset(Seurat_AD, subset = nFeature_RNA < 2500 & percent.mt < 5)
-```
-***
-
-# Normalizing the data
-
-After removing unwanted cells from the dataset, the next step is to normalize the data. By default, we employ a global-scaling normalization method "LogNormalize" that normalizes the feature expression measurements for each cell by the total expression, multiplies this by a scale factor (10,000 by default), and log-transforms the result. In Seurat v5, Normalized values are stored in `obj[["RNA"]]$data`.
-
-```{r normalize}
-#Seurat_AD <- NormalizeData(Seurat_AD, normalization.method = "LogNormalize", scale.factor = 1e4)
-```
-For clarity, in this previous line of code (and in future commands), we provide the default values for certain parameters in the function call. However, this isn't required and the same behavior can be achieved with:
-
-```{r normalize.default, eval = FALSE}
-Seurat_AD <- NormalizeData(Seurat_AD)
-```
-
-While this method of normalization is standard and widely used in scRNA-seq analysis, global-scaling relies on an assumption that each cell originally contains the same number of RNA molecules. We and others have developed alternative workflows for the single cell preprocessing that do not make these assumptions. For users who are interested, please check out our `SCTransform()` normalization workflow. The method is described in our[paper](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-021-02584-9), with a separate vignette using Seurat [here](https://satijalab.org/seurat/articles/sctransform_vignette.html). The use of `SCTransform` replaces the need to run `NormalizeData`, `FindVariableFeatures`, or `ScaleData` (described below.)
-
-## Compare Normalization with Counts
-```{r, warning=FALSE, message=FALSE, fig.width=10, fig.height=5}
-VlnPlot(Seurat_AD, features = c("Actb", "Slc17a7", "Tubb2a"), ncol = 3, layer = "counts", alpha = 0.3)
-
-# We then visualize normalized data
-VlnPlot(Seurat_AD, features = c("Actb", "Slc17a7", "Tubb2a"), ncol = 3, layer = "data", alpha = 0.3)
-
-```
-Now our data is cleaned and normalised and ready to compare with the second 
-dataset (in our case with data from WT mice). However, we need to preprocess the other dataset as well.
-
-```{r qc}
-# The [[ operator can add columns to object metadata. This is a great place to stash QC stats
-Seurat_WT[["percent.mt"]] <- PercentageFeatureSet(Seurat_WT, pattern = "^mt-")
+```{r qc2 wt, fig.height=7, fig.width=13}
 
 #Visualize QC metrics as a violin plot
 VlnPlot(Seurat_WT, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3)
@@ -189,15 +140,33 @@ plot2 <- FeatureScatter(Seurat_WT, feature1 = "nCount_RNA", feature2 = "nFeature
 plot1 + plot2
 
 ```
-Are our filter cut offs (pre-filled below) good for the second data set?
-```{r filtering accoding to visual analysis of the plots}
-Seurat_WT <- subset(Seurat_WT, subset = nFeature_RNA < 2500  & percent.mt < 5)
+## Filter out the bad quality cells 
+
+* We filter cells that have unique feature counts that are too high (too low are already filtered out)
+* We filter cells that have low mitochondrial counts
+
+```{r filtering accoding to visual analysis of the plots wt}
+Seurat_WT <- subset(Seurat_WT, subset = nFeature_RNA < 2500 & percent.mt < 5)
 ```
-And normalise second dataset:
-```{r normalize.default, eval = FALSE}
+***
+
+# Normalizing the data
+
+After removing unwanted cells from the dataset, the next step is to normalize the data. By default, we employ a global-scaling normalization method "LogNormalize" that normalizes the feature expression measurements for each cell by the total expression, multiplies this by a scale factor (10,000 by default), and log-transforms the result. In Seurat v5, Normalized values are stored in `obj[["RNA"]]$data`.
+
+```{r normalize wt}
+#Seurat_WT <- NormalizeData(Seurat_WT, normalization.method = "LogNormalize", scale.factor = 1e4)
+```
+For clarity, in this previous line of code (and in future commands), we provide the default values for certain parameters in the function call. However, this isn't required and the same behavior can be achieved with:
+
+```{r normalize_default_wt}
 Seurat_WT <- NormalizeData(Seurat_WT)
+Seurat_WT
 ```
-## Compare Normalization with Counts in WT (optional)
+
+While this method of normalization is standard and widely used in scRNA-seq analysis, global-scaling relies on an assumption that each cell originally contains the same number of RNA molecules. We and others have developed alternative workflows for the single cell preprocessing that do not make these assumptions. For users who are interested, please check out our `SCTransform()` normalization workflow. The method is described in our[paper](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-021-02584-9), with a separate vignette using Seurat [here](https://satijalab.org/seurat/articles/sctransform_vignette.html). The use of `SCTransform` replaces the need to run `NormalizeData`, `FindVariableFeatures`, or `ScaleData` (described below.)
+
+## Compare Normalization with Counts
 ```{r, warning=FALSE, message=FALSE, fig.width=10, fig.height=5}
 VlnPlot(Seurat_WT, features = c("Actb", "Slc17a7", "Tubb2a"), ncol = 3, layer = "counts", alpha = 0.3)
 
@@ -205,56 +174,70 @@ VlnPlot(Seurat_WT, features = c("Actb", "Slc17a7", "Tubb2a"), ncol = 3, layer = 
 VlnPlot(Seurat_WT, features = c("Actb", "Slc17a7", "Tubb2a"), ncol = 3, layer = "data", alpha = 0.3)
 
 ```
-# Merging data sets
-In order to integrate the data sets we will form a merged object first. merge() 
-funciton will by default erase normalisation data. Here we used the same 
-normalisation for both data sets, so we can keep it in merged object 
-(use parameter merge.data = TRUE). 
+Now our data is cleaned and normalised and ready to compare with the second 
+dataset (in our case with data from AD mice). However, we need to preprocess the other dataset as well.
 
-```{r merge layers}
-Seurat_AD_WT <- merge(Seurat_AD, y = Seurat_WT,
-                              add.cell.ids = c("AD", "WT"),
-                              merge.data = TRUE)
+```{r qc ad}
+# The [[ operator can add columns to object metadata. This is a great place to stash QC stats
+Seurat_AD[["percent.mt"]] <- PercentageFeatureSet(Seurat_AD, pattern = "^mt-")
+
+#Visualize QC metrics as a violin plot
+VlnPlot(Seurat_AD, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3)
+
+# FeatureScatter is typically used to visualize feature-feature relationships, but can be used for anything calculated by the object, i.e. columns in object metadata, PC scores etc.
+
+plot1 <- FeatureScatter(Seurat_AD, feature1 = "nCount_RNA", feature2 = "percent.mt")
+plot2 <- FeatureScatter(Seurat_AD, feature1 = "nCount_RNA", feature2 = "nFeature_RNA")
+plot1 + plot2
 
 ```
-Now let's have a look at object info for all 3 objects:
-```{r object info}
+Are our filter cut offs (pre-filled below) good for the second data set?
+```{r filtering accoding to visual analysis of the plots ad}
+Seurat_AD <- subset(Seurat_AD, subset = nFeature_RNA < 2500  & percent.mt < 5)
+```
+And normalise second dataset:
+```{r normalize_default_ad}
+Seurat_AD <- NormalizeData(Seurat_AD)
+```
+## Compare Normalization with Counts in WT (optional)
+```{r, warning=FALSE, message=FALSE, fig.width=10, fig.height=5}
+VlnPlot(Seurat_AD, features = c("Actb", "Slc17a7", "Tubb2a"), ncol = 3, layer = "counts", alpha = 0.3)
+
+# We then visualize normalized data
+VlnPlot(Seurat_AD, features = c("Actb", "Slc17a7", "Tubb2a"), ncol = 3, layer = "data", alpha = 0.3)
+
+```
+
+Now let's have a look at object info for both data sets:
+```{r object info wt}
 Seurat_WT
 ```
-```{r object info}
+```{r object info ad}
 Seurat_AD
 ```
-```{r object info}
-Seurat_AD_WT
-```
 
 
-# Intro: Integrative analysis in Seurat v5
-Integration of single-cell sequencing datasets, for example across experimental batches, donors, or conditions, is often an important step in scRNA-seq workflows. Integrative analysis can help to match shared cell types and states across datasets, which can boost statistical power, and most importantly, facilitate accurate comparative analysis across datasets. In previous versions of Seurat we introduced methods for integrative analysis, including our ‘anchor-based’ integration workflow. Many labs have also published powerful and pioneering methods, including Harmony and scVI, for integrative analysis. We recognize that while the goal of matching shared cell types across datasets may be important for many problems, users may also be concerned about which method to use, or that integration could result in a loss of biological resolution. In Seurat v5, we introduce more flexible and streamlined infrastructure to run different integration algorithms with a single line of code. This makes it easier to explore the results of different integration methods, and to compare these results to a workflow that excludes integration steps. 
-based on vignette
-https://satijalab.org/seurat/articles/seurat5_integration#layers-in-the-seurat-v5-object
-
-We will first proceed WITHOUT data integfration for comparative reasons:
-
+# Intro: Looking at data in Seurat v5
+We will first look at variable genes in our data, to identify which genes could potentially play a role to distinguish cell types.
 ## Identification of highly variable features (feature selection)
 We calculate a subset of features that exhibit high cell-to-cell variation in the dataset (i.e, they are highly expressed in some cells, and lowly expressed in others). We and [others](https://www.nature.com/articles/nmeth.2645) have found that focusing on these genes in downstream analysis helps to highlight biological signal in single-cell datasets.
 
 Our procedure in Seurat is described in detail [here](https://doi.org/10.1016/j.cell.2019.05.031), and improves on previous versions by directly modeling the mean-variance relationship inherent in single-cell data, and is implemented in the `FindVariableFeatures()` function. By default, we return 2,000 features per dataset. These will be used in downstream analysis, like PCA.
 
 ```{r, variable features}
-Seurat_AD_WT <- FindVariableFeatures(Seurat_AD_WT)
+Seurat_WT <- FindVariableFeatures(Seurat_WT)
 
 # plot variable features with and without labels
- VariableFeaturePlot(Seurat_AD_WT)
+ VariableFeaturePlot(Seurat_WT)
 
 ```
 
 ```{r, label variable points}
 # Identify the 20 most highly variable genes
-top20 <- head(VariableFeatures(Seurat_AD_WT), 20)
+top20 <- head(VariableFeatures(Seurat_WT), 20)
 
 # plot variable features with and without labels
-plot1 <- VariableFeaturePlot(Seurat_AD_WT)
+plot1 <- VariableFeaturePlot(Seurat_WT)
 plot2 <- LabelPoints(plot = plot1, points = top20, repel = TRUE)
 plot1 + plot2
 ```
@@ -270,7 +253,7 @@ Next, we apply a linear transformation ('scaling') that is a standard pre-proces
 * You can specify the `features` argument to scale additional features
 
 ```{r, scale data}
-Seurat_AD_WT <- ScaleData(Seurat_AD_WT)
+Seurat_WT <- ScaleData(Seurat_WT)
 ```
 
 
@@ -281,38 +264,37 @@ Next we perform PCA on the scaled data. By default, only the previously determin
 For the first principal components, Seurat outputs a list of genes with the most positive and negative loadings, representing modules of genes that exhibit either correlation (or anti-correlation) across single-cells in the dataset.
 
 ```{r pca}
-Seurat_AD_WT <- RunPCA(Seurat_AD_WT, features = VariableFeatures(object = Seurat_AD_WT), npcs = 25)
+Seurat_WT <- RunPCA(Seurat_WT, features = VariableFeatures(object = Seurat_WT), npcs = 25)
 ```
 
 Seurat provides several useful ways of visualizing both cells and features that define the PCA, including `VizDimReduction()`, `DimPlot()`, and `DimHeatmap()`
 
 ```{r pca_viz, fig.height=8, fig.width=10, message=TRUE}
 # Examine and visualize PCA results a few different ways
-VizDimLoadings(Seurat_AD_WT, dims = 1:2, reduction = 'pca')
-DimPlot(Seurat_AD_WT, reduction = 'pca') + NoLegend()
+VizDimLoadings(Seurat_WT, dims = 1:2, reduction = 'pca')
+DimPlot(Seurat_WT, reduction = 'pca') + NoLegend()
 ```
 
 In particular `DimHeatmap()` allows for easy exploration of the primary sources of heterogeneity in a dataset, and can be useful when trying to decide which PCs to include for further downstream analyses. Both cells and features are ordered according to their PCA scores. Setting `cells` to a number plots the 'extreme' cells on both ends of the spectrum, which dramatically speeds plotting for large datasets. Though clearly a supervised analysis, we find this to be a valuable tool for exploring correlated feature sets.
 
 ```{r single-heatmap}
-DimHeatmap(Seurat_AD_WT, dims = 1, cells = 500, balanced = TRUE)
+DimHeatmap(Seurat_WT, dims = 1, cells = 500, balanced = TRUE)
 ```
 
 ```{r multi-heatmap, fig.height=15, fig.width=9}
-DimHeatmap(Seurat_AD_WT, dims = 1:6, cells = 500, balanced = TRUE)
+DimHeatmap(Seurat_WT, dims = 1:6, cells = 500, balanced = TRUE)
 ```
-
 
 ## Determine the 'dimensionality' of the dataset
 
 To overcome the extensive technical noise in any single feature for scRNA-seq data, Seurat clusters cells based on their PCA scores, with each PC essentially representing a 'metafeature' that combines information across a correlated feature set. The top principal components therefore represent a robust compression of the dataset. However, how many components should we choose to include? 10? 20? 100?
 
-In [Macosko *et al*](http://www.cell.com/abstract/S0092-8674(15)00549-8), we implemented a resampling test inspired by the JackStraw procedure. While still available in Seurat [(see previous vignette)](https://satijalab.org/seurat/articles/pbmc3k_tutorial), this is a slow and computationally expensive procedure, and we is no longer routinely used in single cell analysis.
+In [Macosko *et al*](http://www.cell.com/abstract/S0092-8674(15)00549-8), a resampling test was implemented inspired by the JackStraw procedure. While still available in Seurat [(see previous vignette)](https://satijalab.org/seurat/articles/pbmc3k_tutorial), this is a slow and computationally expensive procedure, and we is no longer routinely used in single cell analysis.
 
 An alternative heuristic method generates an 'Elbow plot': a ranking of principle components based on the percentage of variance explained by each one (`ElbowPlot()` function). In this example, we can observe an 'elbow' around PC9-10, suggesting that the majority of true signal is captured in the first 10 PCs. 
 
 ```{r elbow_plot, fig.height=6, fig.width=10}
-ElbowPlot(Seurat_AD_WT)
+ElbowPlot(Seurat_WT)
 ```
 
 Identifying the true dimensionality of a dataset -- can be challenging/uncertain for the user. We therefore suggest these multiple approaches for users. The first is more supervised, exploring PCs to determine relevant sources of heterogeneity, and could be used in conjunction with GSEA for example. The second (`ElbowPlot`) The third is a heuristic that is commonly used, and can be calculated instantly. In this example, we might have been justified in choosing anything between PC 7-12 as a cutoff. 
@@ -333,11 +315,11 @@ To cluster the cells, we next apply modularity optimization techniques such as t
 
 
 ```{r cluster}
-Seurat_AD_WT <- FindNeighbors(Seurat_AD_WT,reduction = "pca", dims = 1:13)
-Seurat_AD_WT <- FindClusters(Seurat_AD_WT, resolution = 2) # the higher the number the higher the clusters
+Seurat_WT <- FindNeighbors(Seurat_WT,reduction = "pca", dims = 1:13)
+Seurat_WT <- FindClusters(Seurat_WT, resolution = 2) # the higher the number the higher the clusters
 
 # Look at cluster IDs of the first 5 cells
-head(Idents(Seurat_AD_WT), 5)
+head(Idents(Seurat_WT), 5)
 ```
 
 ***
@@ -350,59 +332,16 @@ While we and others have routinely found 2D visualization techniques like tSNE a
 
 
 ```{r umap}
-Seurat_AD_WT <- RunUMAP(Seurat_AD_WT, dims = 1:13)
+Seurat_WT <- RunUMAP(Seurat_WT, dims = 1:13)
 ```
 
 ```{r umapplot, fig.height=8, fig.width=8}
-N_clusters <-length(unique(Idents(Seurat_AD_WT)))
+N_clusters <-length(unique(Idents(Seurat_WT)))
 # note that you can set `label = TRUE` or use the LabelClusters function to help label individual clusters
-plot1 <- DimPlot(Seurat_AD_WT, label = T, label.size = 6, reduction = 'umap', cols = turbo(N_clusters)) + NoLegend()
-plot2 <- DimPlot(Seurat_AD_WT, label = T, label.size = 6, reduction = 'umap', group.by = 'condition', cols = c('purple', 'yellow'),  ) + NoLegend()
-plot1 + plot2
+plot1 <- DimPlot(Seurat_WT, label = T, label.size = 6, reduction = 'umap', cols = turbo(N_clusters)) + NoLegend()
+plot1
 ```
 
-## Integrate the datasets
-Now we will re-run the analysis, but we will integrate the datasets beforehand
-
-Seurat v5 enables streamlined integrative analysis using the IntegrateLayers function. The method currently supports five integration methods. Each of these methods performs integration in low-dimensional space, and returns a dimensional reduction (i.e. integrated.rpca) that aims to co-embed shared cell types across batches:
-
-Anchor-based CCA integration (method=CCAIntegration) 1min
-Anchor-based RPCA integration (method=RPCAIntegration) total size big
-Harmony (method=HarmonyIntegration)
-FastMNN (method= FastMNNIntegration)
-scVI (method=scVIIntegration)
-
-```{r, data sets integration fig.height = 7, fig.width = 10}
-Seurat_AD_WT <- IntegrateLayers(
-  object = Seurat_AD_WT, method = CCAIntegration,
-  orig.reduction = "pca", new.reduction = "integrated.cca",
-  verbose = FALSE
-)
-```
-
-## Clustering and UMAP on integrated data
-```{r, UMAP}
-Seurat_AD_WT <- FindNeighbors(Seurat_AD_WT, reduction = "integrated.cca", dims = 1:13)
-Seurat_AD_WT <- FindClusters(Seurat_AD_WT, resolution = 2, cluster.name = "cca_clusters")
-```
-
-```{r, UMAP}
-Seurat_AD_WT <- RunUMAP(Seurat_AD_WT, reduction = "integrated.cca", dims = 1:13, reduction.name = "umap.cca")
-
-```
-```{r umapplot, fig.height=8, fig.width=8}
-N_clusters <-length(unique(Idents(Seurat_AD_WT)))
-# note that you can set `label = TRUE` or use the LabelClusters function to help label individual clusters
-plot3 <- DimPlot(Seurat_AD_WT, label = T, label.size = 3, reduction = 'umap.cca', cols = turbo(N_clusters)) + NoLegend()
-plot4 <- DimPlot(Seurat_AD_WT, label = T, label.size = 3, reduction = 'umap.cca', group.by =  'condition', cols = c('purple', 'yellow') ) 
-plot3 + plot4
-```
-
-## Compare non-integrated and integrated datasets
-```{r umapplot, fig.height=8, fig.width=8}
-# note that you can set `label = TRUE` or use the LabelClusters function to help label individual clusters
-plot2 + plot4 
-```
 ## Practical
 Find the pca components that you think give you reliable clusters. 
 Use harmony integration and compare unintegrated, cca and harmony integrated data.
@@ -423,19 +362,11 @@ for cell markers etc.
 See also:
 https://azimuth.hubmapconsortium.org/references/mouse_motorcortex/
 
-
-## Re-join layers after integration
-
-```{r}
-Seurat_AD_WT[["RNA"]] <- JoinLayers(Seurat_AD_WT[["RNA"]])
-
-```
-
 ## Look at Features
 
 ```{r,fig.height = 7, fig.width = 10}
 FeaturePlot(
-  object = Seurat_AD_WT,
+  object = Seurat_WT,
   features = c(
     "Slc1a3", #Astrocytes
     "Wfs1", # Glut Neurons or Slc17a7
@@ -452,9 +383,7 @@ Let's llok at some genes across:
 - conditions (WT vs AD)
 
 ```{r, fig.height = 7, fig.width = 14}
-VlnPlot(Seurat_AD_WT, 'Wfs1')
-VlnPlot(Seurat_AD_WT, 'Wfs1', split.by = 'condition')
-VlnPlot(Seurat_AD_WT, 'Apoe', group.by = 'condition') # check knockout
+VlnPlot(Seurat_WT, 'Wfs1')
 ```
 This is to just prepare some marker genes
 Data taken from the publication
@@ -536,32 +465,17 @@ pct.2 : The percentage of cells where the feature is detected in the second grou
 p_val_adj : Adjusted p-value, based on Bonferroni correction using all features in the dataset.
 If the ident.2 parameter is omitted or set to NULL, FindMarkers() will test for differentially expressed features between the group specified by ident.1 and all other cells. Additionally, the parameter only.pos can be set to TRUE to only search for positive markers, i.e. features that are more highly expressed in the ident.1 group.
 
-FindConservedMarkers() helps to find conserved markers across conditions for a given cluster
-
 In Seurat v5, we use the presto package (as described here and available for installation here), to dramatically improve the speed of DE analysis, particularly for large datasets. For users who are not using presto, you can examine the documentation for this function (?FindMarkers) to explore the min.pct and logfc.threshold parameters, which can be increased in order to increase the speed of DE testing.
 
 ```{r, fig.height = 7, fig.width = 14}
-DotPlot(Seurat_AD_WT, features= all_genes) 
-DotPlot(Seurat_AD_WT, features= all_genes, group.by = "condition") 
-DotPlot(Seurat_AD_WT, features= c(all_genes, 'Apoe'), group.by = "condition") 
+DotPlot(Seurat_WT, features= all_genes) 
 ```
 
 ```{r, fig.height = 7, fig.width = 14}
 # find all markers of cluster 5
-Idents(Seurat_AD_WT) <- "seurat_clusters"
-cluster13.markers <- FindMarkers(Seurat_AD_WT, ident.1 = "13", only.pos = TRUE)
+Idents(Seurat_WT) <- "seurat_clusters"
+cluster13.markers <- FindMarkers(Seurat_WT, ident.1 = "13", only.pos = TRUE)
 head(cluster13.markers, n = 10)
-
-Idents(Seurat_AD_WT) <- "seurat_clusters"
-cluster13.conserved <- FindConservedMarkers(Seurat_AD_WT, ident.1 = "13", grouping.var = "condition", verbose = FALSE)
-
-# Find markers across conditions
-Seurat_AD_WT$cluster_cond <- paste(Seurat_AD_WT$seurat_clusters, 
-                                   Seurat_AD_WT$condition, sep = "_")
-
-Idents(Seurat_AD_WT) <- "cluster_cond"
-cluster13.markers.cond <- FindMarkers(Seurat_AD_WT, ident.1 = "13_WT", ident.2 = "13_AD")
-
 ```
 
 ### Plot the markers
@@ -570,38 +484,17 @@ cluster13.markers %>%
     dplyr::filter(avg_log2FC > 2 & p_val < 0.05) %>%
     slice_max(avg_log2FC, n = 10) -> top10
 
-Idents(Seurat_AD_WT) <- "seurat_clusters"
-DotPlot(Seurat_AD_WT, features = rownames(top10))
-DotPlot(Seurat_AD_WT, features = rownames(top10), group.by = "condition")
+Idents(Seurat_WT) <- "seurat_clusters"
+DotPlot(Seurat_WT, features = rownames(top10))
 ```
-
-```{r, fig.height = 7, fig.width = 14}
-cluster13.markers.cond %>%
-    dplyr::filter(avg_log2FC > 2 & p_val < 0.05) %>%
-    slice_max(avg_log2FC, n = 10) -> top10
-
-Idents(Seurat_AD_WT) <- "seurat_clusters"
-DotPlot(Seurat_AD_WT, features = rownames(top10), group.by = "condition")
-
-cluster13.markers.cond %>%
-    dplyr::filter(avg_log2FC > -2 & p_val < 0.05) %>%
-    slice_min(avg_log2FC, n = 10) -> top10
-
-Idents(Seurat_AD_WT) <- "seurat_clusters"
-DotPlot(Seurat_AD_WT, features = rownames(top10), group.by = "condition")
-
-```
-
-
-
 
 # Azimuth
 Automated naming of clusters 
 
 ```{r, fig.height = 7, fig.width = 14}
-Seurat_AD_WT <- RunAzimuth(Seurat_AD_WT, reference = "mousecortexref")
-p1 <- DimPlot(Seurat_AD_WT, group.by = "predicted.celltype.l2", label = TRUE, label.size = 3) + NoLegend()
-p2 <- DimPlot(Seurat_AD_WT, group.by = "Method")
+Seurat_WT <- RunAzimuth(Seurat_WT, reference = "mousecortexref")
+p1 <- DimPlot(Seurat_WT, group.by = "predicted.celltype.l2", label = TRUE, label.size = 3) + NoLegend()
+p2 <- DimPlot(Seurat_WT, group.by = "Method")
 p1 + p2
 
 ```
@@ -613,10 +506,10 @@ use: https://knowledge.brain-map.org/mapmycells/process/
 ## Extract the Count Matrix
 
 ```{r,fig.height = 7, fig.width = 10}
-mat <- GetAssayData(object = subset(Seurat_AD_WT, downsample = 1000, subset = seurat_clusters %in% c(13)), assay = "RNA", slot = "counts")
+mat <- GetAssayData(object = subset(Seurat_WT, downsample = 1000, subset = seurat_clusters %in% c(13)), assay = "RNA", slot = "counts")
 # we need to transpose the matrix, as MapMyCells expects matrix in which rows are "cells" and columns are genes! 
 mat_t <- t(mat)
-write.csv(mat_t, "./output/count_matrix_cluster13.csv")
+write.csv(mat_t, "./count_matrix_cluster13.csv")
 ```
 
 

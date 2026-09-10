@@ -137,7 +137,7 @@ Run PCA
 What is it? PCA is a dimensionality reduction technique that transforms a large set of correlated variables into a smaller set of uncorrelated principal components. Each principal component captures the maximum possible variance from the data in decreasing order.
 Why use it? We use PCA to simplify complex gene expression data, highlight the main patterns, and make clusters or differences between healthy and Alzheimer’s patients easier to see and analyze.
 
-```{r PCA, echo=FALSE}
+```{r PCA run, echo=FALSE}
 # Run principal component analysis on scaled data.
 pca_result <- prcomp(df_scaled, center = FALSE, scale. = FALSE)
 summary(pca_result) # Print variance explained by each principal component.
@@ -147,7 +147,7 @@ summary(pca_result) # Print variance explained by each principal component.
 ## Scree Plot: Proportion of Variance Explained
 The scree plot helps visualize the variance explained by each component.
 
-```{r PCA, echo=FALSE, fig.width=10, fig.height=5}
+```{r PCA results, echo=FALSE, fig.width=10, fig.height=5}
 # Plot variance explained by each principal component (base plot).
 plot(pca_result)
 
@@ -220,7 +220,7 @@ pca_rotations_filtered_df %>%
 ```
 
 Purpose: Visualize how patients cluster by principal components. Color points by diagnosis.
-```{r PCA_plot, echo=FALSE, fig.width=10, fig.height=6}
+```{r PCA_plot2, echo=FALSE, fig.width=10, fig.height=6}
 # basic plot
 pca_with_df <- pca_result %>%
   augment(df) # Add original data to PCA result
@@ -254,7 +254,7 @@ umap_df <- as_tibble(umap_res, .name_repair = "minimal") %>%
 
 ## Plot UMAP
 
-```{r UMAP_run, echo=FALSE, fig.width=7, fig.height=6}
+```{r UMAP_run_plot, echo=FALSE, fig.width=7, fig.height=6}
 # Plot UMAP results colored by diagnosis
 plot1 <- ggplot(umap_df, aes(UMAP1, UMAP2, color = clinical_diagnosis)) +
   labs(title = "UMAP Projection of Alzheimer’s Data",
@@ -267,7 +267,7 @@ plot1
 ```
 ## UMAP on PCA
 Purpose: Apply UMAP after reducing to 4 principal components. May improve clustering.
-```{r UMAP_run, echo=FALSE, fig.width=10, fig.height=5}
+```{r UMAP_run_PCA, echo=FALSE, fig.width=10, fig.height=5}
 # Run UMAP
 set.seed(42)
 umap_PCA_res <- umap(pca_with_df %>% select(starts_with(".fitted")), 
@@ -282,7 +282,7 @@ umap_PCA_df <- as_tibble(umap_PCA_res, .name_repair = "minimal") %>%
 ```
 ### Plot UMAP on PCA
 
-```{r UMAP_run, echo=FALSE, fig.width=20, fig.height=5}
+```{r UMAP_run_PCA_plot, echo=FALSE, fig.width=20, fig.height=5}
 # Plot UMAP results colored by diagnosis
 plot2 <- ggplot(umap_PCA_df, aes(UMAP1, UMAP2, color = clinical_diagnosis)) +
   labs(title = "UMAP-PCA Projection of Alzheimer’s Data",

@@ -95,30 +95,30 @@ df <- df %>% left_join(df_meta, ., by = "Assay") #%>% filter(Brain_Area == "hipp
 
 
 ##Get basic information about the data frame
-```{r size}
+```{r size df}
 # Show dimensions of data frame
 dim(df)
 ```
 how many rows is there? how many columns are there?
 
-```{r hepl}
+```{r help}
 # check what the output means
 ?dim
 ```
 
-```{r size}
+```{r size row}
 # Show number of rows
 nrow(df)
 ```
-```{r size}
+```{r size col}
 # Show number of columns
 ncol(df)
 ```
-```{r size}
+```{r size head}
 # Show first (here 20) entries
 head(df, 20)
 ```
-```{r size}
+```{r size tail}
 # Show last (here 20) entries
 tail(df, 20)
 ```
@@ -186,7 +186,7 @@ wilcox.test(normal_expr, ad_expr)
 hist(normal_expr, 8)
 ```
 
-```{r histogram Alheimer's}
+```{r histogram Alheimers}
 # plot a histogram for control sample with 8 bins
 hist(ad_expr, 8)
 ```
@@ -218,7 +218,7 @@ Let's try box plot
 boxplot(ad_expr, normal_expr)
 ```
 
-```{r boxplot}
+```{r boxplot2}
 # box plot representing both samples
 boxplot(ad_expr, normal_expr, main = 'NPTX2 expression', names=c('AD', 'N'), col = "#76EEC6")
 points(c(mean(ad_expr), mean(normal_expr)),col="red",pch=18)
