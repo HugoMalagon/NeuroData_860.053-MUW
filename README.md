@@ -36,7 +36,7 @@ Verify your email and sign in.
 
 Once logged in, go to the Downloads section.
 
-Choose MATLAB R2025a (or the latest 2025 release).
+Choose MATLAB R2025a (or the latest release).
 
 Follow the on-screen instructions to install MATLAB on your computer.
 
