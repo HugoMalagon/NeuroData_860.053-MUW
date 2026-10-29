@@ -1,7 +1,7 @@
 ***
 # Processing and Interpretation of Neuroscience Data
 
-**Course Information – First 4 Lessons**
+**Course Information – First 5 Lessons**
 
 Dear Students,
 
@@ -23,7 +23,7 @@ We kindly request all students to install **Docker Desktop**, a free software se
 - [Download Docker Desktop Linux](https://docs.docker.com/desktop/setup/install/linux/)
 - [Download Docker Desktop MacOS](https://docs.docker.com/desktop/setup/install/mac-install/)
 
-We have prepared a helped doc file on how to install the software and download the essential Virtual Environment, please find it in this repository:
+We have prepared a help document on how to install the software and download the essential Virtual Environment, please find it in this repository:
 - see: **Docker and container install.docx**
 
 For guidance on using Docker Desktop, please refer to the following resources:
@@ -31,7 +31,7 @@ For guidance on using Docker Desktop, please refer to the following resources:
 - [Official Manual](https://docs.docker.com/desktop/use-desktop/)
 - [YouTube Guide](https://www.youtube.com/watch?v=31ieHmcTUOk&list=PL4cUxeGkcC9hxjeEtdHFNYMtCpjNBm3h7)
 
-*If you have any problems with installation, please come 15 minutes earlier before class for troubleshooting.*
+*If you have any problems with installation, please come 15 minutes before class for troubleshooting.*
 
 **Important:** Download the newest version of `*.Rmd` files from GitHub before class.
 

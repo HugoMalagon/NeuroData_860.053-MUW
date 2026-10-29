@@ -1,6 +1,6 @@
 # IMPORTANT
 
-Unless you are interested on specific individual files, the best option is to download the entire repository.
+Unless you are interested in specific individual files, the best option is to download the entire repository.
 
 From this page, you go to the "code" button and click on the down arrow. It should give you the option to download as a Zip file. You can also clone it if you have a github account.
 
@@ -11,12 +11,12 @@ Welcome to the lecture of the MUW on Processing and Interpretation of Neuroscien
 
 ## Lesson 1-5
 
-Info about the lesson # 1 to # 5, scritps and needed data can be found in the in the folder **Lessons 1 - 5**. 
-Please go over this and make sure that you install **Docker Desktop** on your computer prior the first lecture and pull the **haubensaklab/seurat-rstudio:latest** image. See documents in the folder.
+Info about the lesson # 1 to # 5, scripts and needed data can be found in the folder **Lessons 1 - 5**. 
+Please go over this and make sure that you install **Docker Desktop** on your computer prior to the first lecture and pull the **haubensaklab/seurat-rstudio:latest** image. See documents in the folder.
 
 ## Lesson 6-10
 
-This repository is fundamental for the lessons # 6 to 10. Before Session 6 (November 11, 2025), please ensure that you have MATLAB installed and ready to use.
+This repository is fundamental for the lessons # 6 to # 10. Each lesson has its own folder (**Lesson 6** to **Lesson 10**) with a README, the notebook, data and functions. Before Session 6, please ensure that you have MATLAB installed and ready to use.
 
 # Matlab Installation
 
