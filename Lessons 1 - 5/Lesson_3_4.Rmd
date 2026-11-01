@@ -38,6 +38,7 @@ library(BPCells)
 library(tidyverse)
 library(harmony)
 library(viridisLite)
+library(Azimuth)
 # needs to be set for large dataset analysis
 options(future.globals.maxSize = 1e9)
 ```
@@ -94,7 +95,7 @@ nCount: total number of RNA molecules detected in that same cell
 
 ```{r load data all}
 #load datasets
-setwd("~/data")
+#setwd("~/data")
 Seurat_AD <- LoadSeuratRds('./Input_data/Eko_hippo.rds')
 Seurat_WT <- LoadSeuratRds('./Input_data/WT_hippo.rds')
 condition <- vector(mode="character", length=length(Seurat_AD$orig.ident))
@@ -493,9 +494,29 @@ Automated naming of clusters
 
 ```{r, fig.height = 7, fig.width = 14}
 Seurat_WT <- RunAzimuth(Seurat_WT, reference = "mousecortexref")
-p1 <- DimPlot(Seurat_WT, group.by = "predicted.celltype.l2", label = TRUE, label.size = 3) + NoLegend()
-p2 <- DimPlot(Seurat_WT, group.by = "Method")
-p1 + p2
+
+ct <- "predicted.subclass"
+
+p1 <- DimPlot(Seurat_WT, label = T, label.size = 6, reduction = 'umap', cols = turbo(N_clusters)) + NoLegend() +  ggtitle("original UMAP clusters")
+
+p2 <- DimPlot(Seurat_WT, reduction = "umap", group.by = ct,
+              label = TRUE, repel = TRUE, label.size = 3) +
+  ggtitle("Azimuth subclass on original UMAP") + NoLegend()
+
+# highligh the specific cell type
+cells_to_highlight <- WhichCells(Seurat_WT, expression = predicted.subclass == "Sst")
+p3 <- DimPlot(Seurat_WT, reduction = "umap",
+        cells.highlight = cells_to_highlight,
+        cols.highlight = "red", cols = "grey85",
+        sizes.highlight = 0.6) +
+  ggtitle(paste0("Vip cells (n = ", length(cells_to_highlight), ")")) +
+  NoLegend()
+
+p1 + p2 +p3
+
+tab <- table(Seurat = Seurat_WT$seurat_clusters,
+             Azimuth = Seurat_WT$predicted.subclass)
+tab
 
 ```
 
@@ -506,7 +527,7 @@ use: https://knowledge.brain-map.org/mapmycells/process/
 ## Extract the Count Matrix
 
 ```{r,fig.height = 7, fig.width = 10}
-mat <- GetAssayData(object = subset(Seurat_WT, downsample = 1000, subset = seurat_clusters %in% c(13)), assay = "RNA", slot = "counts")
+mat <- GetAssayData(object = subset(Seurat_WT, downsample = 1000, subset = seurat_clusters %in% c(13)), assay = "RNA", layer = "counts")
 # we need to transpose the matrix, as MapMyCells expects matrix in which rows are "cells" and columns are genes! 
 mat_t <- t(mat)
 write.csv(mat_t, "./count_matrix_cluster13.csv")
