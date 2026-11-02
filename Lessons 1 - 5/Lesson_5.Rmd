@@ -547,9 +547,29 @@ Automated naming of clusters
 
 ```{r, fig.height = 7, fig.width = 14}
 Seurat_AD_WT <- RunAzimuth(Seurat_AD_WT, reference = "mousecortexref")
-p1 <- DimPlot(Seurat_AD_WT, group.by = "predicted.celltype.l2", label = TRUE, label.size = 3) + NoLegend()
-p2 <- DimPlot(Seurat_AD_WT, group.by = "Method")
-p1 + p2
+ct <- "predicted.subclass"
+
+p1 <- DimPlot(Seurat_AD_WT, label = T, label.size = 6, reduction = 'umap', cols = turbo(N_clusters)) + NoLegend() +  ggtitle("original UMAP clusters")
+
+p2 <- DimPlot(Seurat_AD_WT, reduction = "umap", group.by = ct,
+              label = TRUE, repel = TRUE, label.size = 3) +
+  ggtitle("Azimuth subclass on original UMAP") + NoLegend()
+
+# highligh the specific cell type
+cells_to_highlight <- WhichCells(Seurat_AD_WT, expression = predicted.subclass == "Sst")
+p3 <- DimPlot(Seurat_AD_WT, reduction = "umap",
+        cells.highlight = cells_to_highlight,
+        cols.highlight = "red", cols = "grey85",
+        sizes.highlight = 0.6) +
+  ggtitle(paste0("Vip cells (n = ", length(cells_to_highlight), ")")) +
+  NoLegend()
+
+p1 + p2 +p3
+
+tab <- table(Seurat = Seurat_AD_WT$seurat_clusters,
+             Azimuth = Seurat_AD_WT$predicted.subclass)
+tab
+
 
 ```
 
