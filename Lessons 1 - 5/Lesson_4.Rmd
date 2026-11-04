@@ -1,0 +1,275 @@
+---
+title: "Comparative analysis in Seurat v5"
+output:
+  html_document:
+    theme: united
+    df_print: kable
+  pdf_document: default
+date: 'Compiled: `r Sys.Date()`'
+---
+
+```{r setup, include=FALSE}
+all_times <- list()  # store the time for each chunk
+knitr::knit_hooks$set(time_it = local({
+  now <- NULL
+  function(before, options) {
+    if (before) {
+      now <<- Sys.time()
+    } else {
+      res <- difftime(Sys.time(), now, units = "secs")
+      all_times[[options$label]] <<- res
+    }
+  }
+}))
+knitr::opts_chunk$set(
+  tidy = 'styler',
+  message = TRUE,
+  warning = FALSE,
+  fig.width = 10,
+  time_it = TRUE,
+  error = TRUE
+)
+```
+ 
+load libraries
+```{r, warning=FALSE, message=FALSE}
+library(Seurat)
+library(BPCells)
+library(tidyverse)
+library(harmony)
+library(viridisLite)
+library(Azimuth)
+# needs to be set for large dataset analysis
+options(future.globals.maxSize = 1e9)
+```
+
+# This is a re-run of code from lesson 3
+
+```{r load and process WT data}
+#setwd("~/data")
+# pre-processing workflow-----------------------------------------------------------------------------------------------------------------------------
+Seurat_AD <- LoadSeuratRds('./Input_data/Eko_hippo.rds')
+Seurat_WT <- LoadSeuratRds('./Input_data/WT_hippo.rds')
+condition <- vector(mode="character", length=length(Seurat_AD$orig.ident))
+condition [1:length(condition)] <- "AD"
+Seurat_AD <- AddMetaData(object = Seurat_AD, metadata = condition, col.name = "condition")
+
+condition <- vector(mode="character", length=length(Seurat_WT$orig.ident))
+condition [1:length(condition)] <- "WT"
+Seurat_WT <- AddMetaData(object = Seurat_WT, metadata = condition, col.name = "condition")
+
+rm(condition)
+
+# calculate mitochondrial gene content ------------------------------------------------------------------------------------------------------------------------
+# The [[ operator can add columns to object metadata. This is a great place to stash QC stats
+Seurat_WT[["percent.mt"]] <- PercentageFeatureSet(Seurat_WT, pattern = "^mt-")
+
+# Filter out the bad quality cells ----------------------------------------------------------------------------------------------------------------------------
+Seurat_WT <- subset(Seurat_WT, subset = nFeature_RNA < 2500 & nFeature_RNA > 200 & percent.mt < 5)
+
+# normalize and scale -----------------------------------------------------------------------------------------------------------------------------------------
+Seurat_WT <- NormalizeData(Seurat_WT)
+
+Seurat_WT <- FindVariableFeatures(Seurat_WT,
+                                  selection.method = "vst",
+                                  nfeatures = 2000)
+Seurat_WT <- ScaleData(Seurat_WT)
+
+# PCA and UMAP -----------------------------------------------------------------------------------------------------------------------------------------
+Seurat_WT <- RunPCA(Seurat_WT, features = VariableFeatures(object = Seurat_WT), npcs = 250)
+
+Seurat_WT <- FindNeighbors(Seurat_WT,reduction = "pca", dims = 1:50)
+Seurat_WT <- FindClusters(Seurat_WT, resolution = 1) # the higher the number the higher the clusters
+
+Seurat_WT <- RunUMAP(Seurat_WT, dims = 1:50)
+```
+
+# Run non-linear dimensional reduction (UMAP/tSNE)
+
+Seurat offers several non-linear dimensional reduction techniques, such as tSNE and UMAP, to visualize and explore these datasets. The goal of these algorithms is to learn underlying structure in the dataset, in order to place similar cells together in low-dimensional space. Therefore, cells that are grouped together within graph-based clusters determined above should co-localize on these dimension reduction plots. 
+
+While we and others have routinely found 2D visualization techniques like tSNE and UMAP to be valuable tools for exploring datasets, all visualization techniques have limitations, and cannot fully represent the complexity of the underlying data. In particular, these methods aim to preserve local distances in the dataset (i.e. ensuring that cells with very similar gene expression profiles co-localize), but often do not preserve more global relationships. We encourage users to leverage techniques like UMAP for visualization, but to avoid drawing biological conclusions solely on the basis of visualization techniques. 
+
+```{r umapplot, fig.height=8, fig.width=8}
+N_clusters <-length(unique(Idents(Seurat_WT)))
+# note that you can set `label = TRUE` or use the LabelClusters function to help label individual clusters
+plot1 <- DimPlot(Seurat_WT, label = T, label.size = 6, reduction = 'umap', cols = turbo(N_clusters)) + NoLegend()
+plot1
+```
+
+## Look at Features
+
+```{r,fig.height = 7, fig.width = 10}
+FeaturePlot(
+  object = Seurat_WT,
+  features = c(
+    "Slc1a3", #Astrocytes
+    "Wfs1", # Glut Neurons or Slc17a7
+    "Gad2", # GABA neurons
+    "C1qa", # Microglia
+    "Trf", # Myelin-forming mature oligodendrocytes 
+    "Cldn5"), # Endothelial cells
+  ncol = 3)
+```
+
+## Differential gene expression
+Let's llok at some genes across:
+- clusters
+- conditions (WT vs AD)
+
+```{r, fig.height = 7, fig.width = 14}
+VlnPlot(Seurat_WT, 'Wfs1')
+```
+This is to just prepare some marker genes
+Data taken from the publication
+```{r, clusters}
+# celltype_ 0: Wfs1+,Dcn+,Rxfp1- CA1 pyramidal neurons (Excitatory neuron 1)
+celltype_0 <- c("Wfs1", "Dcn")
+
+# celltype_ 1: C1ql2+ Granule cell of the dentate gyrus (Excitatory neuron 2)
+celltype_1 <- c("C1ql2")
+
+# celltype_ 2: Wfs1+,Dcn-,Rxfp1+ CA1 pyramidal neurons (Excitatory neuron 3)
+celltype_2 <- c("Wfs1", "Rxfp1")
+
+# celltype_ 3: Bok+ CA3 pyramidal neurons (Excitatory neuron 4)
+celltype_3 <- c("Bok")
+
+# celltype_ 4: Wfs1-,Dcn-, pyramidal neurons (Excitatory neuron 5)
+celltype_4 <- c()  # no positive markers
+
+# celltype_ 5: Sst+,Erbb4+ CA1 basket cells (Inhibitory neuron 1)
+celltype_5 <- c("Sst", "Erbb4")
+
+# celltype_ 6: Slc1a3+ Astrocytes
+celltype_6 <- c("Slc1a3")
+
+# celltype_ 7: Trf+ Myelin-forming mature oligodendrocytes (MFOLs)
+celltype_7 <- c("Trf")
+
+# celltype_ 8: Vip+,Reln+,Htr3a+,Erbb4+ CA1 basket cells (Inhibitory neuron 2)
+celltype_8 <- c("Vip", "Reln", "Htr3a", "Erbb4")
+
+# celltype_ 9: Ndst4+,Rxfp1+,Dcn- CA1 pyramidal neurons (Excitatory neuron 6)
+celltype_9 <- c("Ndst4", "Rxfp1")
+
+# celltype_ 10: C1qa+,Trf+ Microglia
+celltype_10 <- c("C1qa", "Trf")
+
+# celltype_ 11: Cldn5+ Endothelial cells
+celltype_11 <- c("Cldn5")
+
+# celltype_ 12: Htr2c+,Glra1-  CA1 pyramidal cells (Excitatory neuron 7)
+celltype_12 <- c("Htr2c")
+
+# celltype_ 13: Htr2c+,Glra1+ CA1 pyramidal cells (Inhibitory neuron 3)
+celltype_13 <- c("Htr2c", "Glra1")
+
+# celltype_ 14: Amigo2+ CA2 pyramidal neurons (Excitatory neuron 8)
+celltype_14 <- c("Amigo2")
+
+# celltype_ 15: Pdgfra+ Oligodendrocyte precursor cells (OPCs)
+celltype_15 <- c("Pdgfra")
+
+# celltype_ 16: Reln+,Dcn+ CA1 pyramidal cells (Excitatory neuron 9)
+celltype_16 <- c("Reln", "Dcn")
+
+# Combine all celltype_ vectors into one
+all_genes <- c(
+  celltype_0, celltype_1, celltype_2, celltype_3, celltype_4, celltype_5, celltype_6,
+  celltype_7, celltype_8, celltype_9, celltype_10, celltype_11, celltype_12, celltype_13,
+  celltype_14, celltype_15, celltype_16
+)
+
+# Remove duplicates
+all_genes <- unique(all_genes)
+
+```
+
+
+## Finding differentially expressed features (cluster biomarkers)
+Seurat can help you find markers that define clusters via differential expression (DE). By default, it identifies positive and negative markers of a single cluster (specified in ident.1), compared to all other cells. 
+FindAllMarkers() automates this process for all clusters, but you can also test groups of clusters vs. each other, or against all cells.
+
+The results data frame has the following columns :
+p_val : p-value (unadjusted)
+avg_log2FC : log fold-change of the average expression between the two groups. Positive values indicate that the feature is more highly expressed in the first group.
+pct.1 : The percentage of cells where the feature is detected in the first group
+pct.2 : The percentage of cells where the feature is detected in the second group
+p_val_adj : Adjusted p-value, based on Bonferroni correction using all features in the dataset.
+If the ident.2 parameter is omitted or set to NULL, FindMarkers() will test for differentially expressed features between the group specified by ident.1 and all other cells. Additionally, the parameter only.pos can be set to TRUE to only search for positive markers, i.e. features that are more highly expressed in the ident.1 group.
+
+In Seurat v5, we use the presto package (as described here and available for installation here), to dramatically improve the speed of DE analysis, particularly for large datasets. For users who are not using presto, you can examine the documentation for this function (?FindMarkers) to explore the min.pct and logfc.threshold parameters, which can be increased in order to increase the speed of DE testing.
+
+```{r, fig.height = 7, fig.width = 14}
+DotPlot(Seurat_WT, features= all_genes) 
+```
+
+```{r, fig.height = 7, fig.width = 14}
+# find all markers of cluster 6
+Idents(Seurat_WT) <- "seurat_clusters"
+cluster6.markers <- FindMarkers(Seurat_WT, ident.1 = "6", only.pos = TRUE)
+head(cluster6.markers, n = 10)
+```
+
+### Plot the markers
+```{r, fig.height = 7, fig.width = 14}
+cluster6.markers %>%
+    dplyr::filter(avg_log2FC > 2 & p_val < 0.05) %>%
+    slice_max(avg_log2FC, n = 10) -> top10
+
+Idents(Seurat_WT) <- "seurat_clusters"
+DotPlot(Seurat_WT, features = rownames(top10))
+```
+
+# Azimuth
+Automated naming of clusters 
+
+```{r, fig.height = 7, fig.width = 14}
+Seurat_WT <- RunAzimuth(Seurat_WT, reference = "mousecortexref")
+
+ct <- "predicted.subclass"
+
+p1 <- DimPlot(Seurat_WT, label = T, label.size = 6, reduction = 'umap', cols = turbo(N_clusters)) + NoLegend() +  ggtitle("original UMAP clusters")
+
+p2 <- DimPlot(Seurat_WT, reduction = "umap", group.by = ct,
+              label = TRUE, repel = TRUE, label.size = 3) +
+  ggtitle("Azimuth subclass on original UMAP") + NoLegend()
+
+# highligh the specific cell type
+cells_to_highlight <- WhichCells(Seurat_WT, expression = predicted.subclass == "Astro")
+p3 <- DimPlot(Seurat_WT, reduction = "umap",
+        cells.highlight = cells_to_highlight,
+        cols.highlight = "red", cols = "grey85",
+        sizes.highlight = 0.6) +
+  ggtitle(paste0("Astrocytes (n = ", length(cells_to_highlight), ")")) +
+  NoLegend()
+
+p1 + p2 +p3
+
+tab <- table(Seurat = Seurat_WT$seurat_clusters,
+             Azimuth = Seurat_WT$predicted.subclass)
+tab
+
+```
+
+# Export data to MapMyCells
+We will export the count matrix and map the cells with Allen Brain atlas
+see: https://portal.brain-map.org/atlases-and-data/bkp/mapmycells
+use: https://knowledge.brain-map.org/mapmycells/process/
+## Extract the Count Matrix
+
+```{r,fig.height = 7, fig.width = 10}
+mat <- GetAssayData(object = subset(Seurat_WT, downsample = 1000, subset = seurat_clusters %in% c(6)), assay = "RNA", layer = "counts")
+# we need to transpose the matrix, as MapMyCells expects matrix in which rows are "cells" and columns are genes! 
+mat_t <- t(mat)
+write.csv(mat_t, "./count_matrix_cluster6.csv")
+```
+
+
+<details>
+  <summary>**Session Info**</summary>
+```{r}
+sessionInfo()
+```
+</details>
