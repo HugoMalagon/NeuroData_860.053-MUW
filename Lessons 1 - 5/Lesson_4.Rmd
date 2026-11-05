@@ -225,7 +225,7 @@ DotPlot(Seurat_WT, features = rownames(top10))
 # Azimuth
 Automated naming of clusters 
 
-```{r, fig.height = 7, fig.width = 14}
+```{r Azimuth, fig.height = 7, fig.width = 14}
 Seurat_WT <- RunAzimuth(Seurat_WT, reference = "mousecortexref")
 
 ct <- "predicted.subclass"
@@ -259,12 +259,35 @@ see: https://portal.brain-map.org/atlases-and-data/bkp/mapmycells
 use: https://knowledge.brain-map.org/mapmycells/process/
 ## Extract the Count Matrix
 
-```{r,fig.height = 7, fig.width = 10}
+```{r MapMyCells,fig.height = 7, fig.width = 10}
 mat <- GetAssayData(object = subset(Seurat_WT, downsample = 1000, subset = seurat_clusters %in% c(6)), assay = "RNA", layer = "counts")
 # we need to transpose the matrix, as MapMyCells expects matrix in which rows are "cells" and columns are genes! 
 mat_t <- t(mat)
 write.csv(mat_t, "./count_matrix_cluster6.csv")
 ```
+
+# Manual rename
+Here we will do a manual rename of some clusters
+
+```{r manual, fig.height = 7, fig.width = 14}
+# Manual assigment of seaurat clusters to names
+lab <- c("6" = "Astro", "4" = "Oligo", "11" = "Endo", "12" = "Micro")
+cl  <- as.character(Seurat_WT$seurat_clusters)
+
+Seurat_WT$manual_label <- ifelse(cl %in% names(lab), lab[cl], paste0("cl", cl))
+
+DimPlot(Seurat_WT, group.by = "manual_label", label = TRUE, repel = TRUE, label.size = 8) + NoLegend()
+
+# different colors
+n   <- length(unique(Idents(Seurat_WT)))      # or the number of levels of your group.by column
+cols <- viridis(n, option = "D")
+
+DimPlot(Seurat_WT, reduction = "umap", group.by = "manual_label", 
+        cols = cols, label = TRUE, repel = TRUE, label.size = 8)
+
+```
+
+
 
 
 <details>
