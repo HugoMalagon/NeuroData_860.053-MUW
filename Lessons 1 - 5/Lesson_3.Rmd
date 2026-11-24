@@ -38,10 +38,10 @@ library(BPCells)
 library(tidyverse)
 library(harmony)
 library(viridisLite)
+library(Azimuth)
 # needs to be set for large dataset analysis
 options(future.globals.maxSize = 1e9)
 ```
-
 
 #how to access the data
 Due to limited time we will not go through the process of downloading the data and 
@@ -51,7 +51,6 @@ matrix (mtx): counts,  gene expression
 barcodes (tsv): sells
 features (tsv): genes
 Look for data availability in the end of the publication.
-
 
 code example on whre to download the data and how to create Seurat object from it
 is pastedbelow. We do not need this code for the excercise. It it is pasted here 
@@ -94,7 +93,7 @@ nCount: total number of RNA molecules detected in that same cell
 
 ```{r load data all}
 #load datasets
-setwd("~/data")
+#setwd("~/data")
 Seurat_AD <- LoadSeuratRds('./Input_data/Eko_hippo.rds')
 Seurat_WT <- LoadSeuratRds('./Input_data/WT_hippo.rds')
 condition <- vector(mode="character", length=length(Seurat_AD$orig.ident))
@@ -138,7 +137,6 @@ VlnPlot(Seurat_WT, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), nco
 plot1 <- FeatureScatter(Seurat_WT, feature1 = "nCount_RNA", feature2 = "percent.mt")
 plot2 <- FeatureScatter(Seurat_WT, feature1 = "nCount_RNA", feature2 = "nFeature_RNA")
 plot1 + plot2
-
 ```
 ## Filter out the bad quality cells 
 
@@ -146,7 +144,11 @@ plot1 + plot2
 * We filter cells that have low mitochondrial counts
 
 ```{r filtering accoding to visual analysis of the plots wt}
-Seurat_WT <- subset(Seurat_WT, subset = nFeature_RNA < 2500 & percent.mt < 5)
+Seurat_WT <- subset(Seurat_WT, subset = nFeature_RNA < 2500 & nFeature_RNA > 200 & percent.mt < 5)
+
+plot1 <- FeatureScatter(Seurat_WT, feature1 = "nCount_RNA", feature2 = "percent.mt")
+plot2 <- FeatureScatter(Seurat_WT, feature1 = "nCount_RNA", feature2 = "nFeature_RNA")
+plot1 + plot2
 ```
 ***
 
@@ -193,7 +195,7 @@ plot1 + plot2
 ```
 Are our filter cut offs (pre-filled below) good for the second data set?
 ```{r filtering accoding to visual analysis of the plots ad}
-Seurat_AD <- subset(Seurat_AD, subset = nFeature_RNA < 2500  & percent.mt < 5)
+Seurat_AD <- subset(Seurat_AD, subset = nFeature_RNA < 2500 & nFeature_RNA > 200 & percent.mt < 5)
 ```
 And normalise second dataset:
 ```{r normalize_default_ad}
@@ -225,11 +227,12 @@ We calculate a subset of features that exhibit high cell-to-cell variation in th
 Our procedure in Seurat is described in detail [here](https://doi.org/10.1016/j.cell.2019.05.031), and improves on previous versions by directly modeling the mean-variance relationship inherent in single-cell data, and is implemented in the `FindVariableFeatures()` function. By default, we return 2,000 features per dataset. These will be used in downstream analysis, like PCA.
 
 ```{r, variable features}
-Seurat_WT <- FindVariableFeatures(Seurat_WT)
+Seurat_WT <- FindVariableFeatures(Seurat_WT,
+                                  selection.method = "vst",
+                                  nfeatures = 2000)
 
 # plot variable features with and without labels
  VariableFeaturePlot(Seurat_WT)
-
 ```
 
 ```{r, label variable points}
@@ -264,7 +267,7 @@ Next we perform PCA on the scaled data. By default, only the previously determin
 For the first principal components, Seurat outputs a list of genes with the most positive and negative loadings, representing modules of genes that exhibit either correlation (or anti-correlation) across single-cells in the dataset.
 
 ```{r pca}
-Seurat_WT <- RunPCA(Seurat_WT, features = VariableFeatures(object = Seurat_WT), npcs = 25)
+Seurat_WT <- RunPCA(Seurat_WT, features = VariableFeatures(object = Seurat_WT), npcs = 50)
 ```
 
 Seurat provides several useful ways of visualizing both cells and features that define the PCA, including `VizDimReduction()`, `DimPlot()`, and `DimHeatmap()`
@@ -294,7 +297,7 @@ In [Macosko *et al*](http://www.cell.com/abstract/S0092-8674(15)00549-8), a resa
 An alternative heuristic method generates an 'Elbow plot': a ranking of principle components based on the percentage of variance explained by each one (`ElbowPlot()` function). In this example, we can observe an 'elbow' around PC9-10, suggesting that the majority of true signal is captured in the first 10 PCs. 
 
 ```{r elbow_plot, fig.height=6, fig.width=10}
-ElbowPlot(Seurat_WT)
+ElbowPlot(Seurat_WT, ndims = 50)
 ```
 
 Identifying the true dimensionality of a dataset -- can be challenging/uncertain for the user. We therefore suggest these multiple approaches for users. The first is more supervised, exploring PCs to determine relevant sources of heterogeneity, and could be used in conjunction with GSEA for example. The second (`ElbowPlot`) The third is a heuristic that is commonly used, and can be calculated instantly. In this example, we might have been justified in choosing anything between PC 7-12 as a cutoff. 
@@ -315,8 +318,8 @@ To cluster the cells, we next apply modularity optimization techniques such as t
 
 
 ```{r cluster}
-Seurat_WT <- FindNeighbors(Seurat_WT,reduction = "pca", dims = 1:13)
-Seurat_WT <- FindClusters(Seurat_WT, resolution = 2) # the higher the number the higher the clusters
+Seurat_WT <- FindNeighbors(Seurat_WT,reduction = "pca", dims = 1:50)
+Seurat_WT <- FindClusters(Seurat_WT, resolution = 1) # the higher the number the higher the clusters
 
 # Look at cluster IDs of the first 5 cells
 head(Idents(Seurat_WT), 5)
@@ -332,7 +335,7 @@ While we and others have routinely found 2D visualization techniques like tSNE a
 
 
 ```{r umap}
-Seurat_WT <- RunUMAP(Seurat_WT, dims = 1:13)
+Seurat_WT <- RunUMAP(Seurat_WT, dims = 1:50)
 ```
 
 ```{r umapplot, fig.height=8, fig.width=8}
@@ -343,175 +346,13 @@ plot1
 ```
 
 ## Practical
-Find the pca components that you think give you reliable clusters. 
-Use harmony integration and compare unintegrated, cca and harmony integrated data.
-
-Questions: 
 1. How to filter the data to get rid of
 a dying cells
 b dublets
 
-2. Data integration is needed  to avoid cells clustering according to the batch 
-instead of the cell type. Think of an example of a dataset where data 
-integration is especially important. 
+2, Why do we use VariableFeatures? What is this looking for and why not use all genes?
 
-# Expression analysis ----------------------------------------------------------------------------------------------------------------------------------------------
-Let's have a look at 
-https://satijalab.org/seurat/articles/integration_introduction#identify-differential-expressed-genes-across-conditions
-for cell markers etc. 
-See also:
-https://azimuth.hubmapconsortium.org/references/mouse_motorcortex/
-
-## Look at Features
-
-```{r,fig.height = 7, fig.width = 10}
-FeaturePlot(
-  object = Seurat_WT,
-  features = c(
-    "Slc1a3", #Astrocytes
-    "Wfs1", # Glut Neurons or Slc17a7
-    "Gad2", # GABA neurons
-    "C1qa", # Microglia
-    "Trf", # Myelin-forming mature oligodendrocytes 
-    "Cldn5"), # Endothelial cells
-  ncol = 3)
-```
-
-## Differential gene expression
-Let's llok at some genes across:
-- clusters
-- conditions (WT vs AD)
-
-```{r, fig.height = 7, fig.width = 14}
-VlnPlot(Seurat_WT, 'Wfs1')
-```
-This is to just prepare some marker genes
-Data taken from the publication
-```{r, clusters}
-# Cluster 0: Wfs1+,Dcn+,Rxfp1- CA1 pyramidal neurons (Excitatory neuron 1)
-cluster0 <- c("Wfs1", "Dcn")
-
-# Cluster 1: C1ql2+ Granule cell of the dentate gyrus (Excitatory neuron 2)
-cluster1 <- c("C1ql2")
-
-# Cluster 2: Wfs1+,Dcn-,Rxfp1+ CA1 pyramidal neurons (Excitatory neuron 3)
-cluster2 <- c("Wfs1", "Rxfp1")
-
-# Cluster 3: Bok+ CA3 pyramidal neurons (Excitatory neuron 4)
-cluster3 <- c("Bok")
-
-# Cluster 4: Wfs1-,Dcn-, pyramidal neurons (Excitatory neuron 5)
-cluster4 <- c()  # no positive markers
-
-# Cluster 5: Sst+,Erbb4+ CA1 basket cells (Inhibitory neuron 1)
-cluster5 <- c("Sst", "Erbb4")
-
-# Cluster 6: Slc1a3+ Astrocytes
-cluster6 <- c("Slc1a3")
-
-# Cluster 7: Trf+ Myelin-forming mature oligodendrocytes (MFOLs)
-cluster7 <- c("Trf")
-
-# Cluster 8: Vip+,Reln+,Htr3a+,Erbb4+ CA1 basket cells (Inhibitory neuron 2)
-cluster8 <- c("Vip", "Reln", "Htr3a", "Erbb4")
-
-# Cluster 9: Ndst4+,Rxfp1+,Dcn- CA1 pyramidal neurons (Excitatory neuron 6)
-cluster9 <- c("Ndst4", "Rxfp1")
-
-# Cluster 10: C1qa+,Trf+ Microglia
-cluster10 <- c("C1qa", "Trf")
-
-# Cluster 11: Cldn5+ Endothelial cells
-cluster11 <- c("Cldn5")
-
-# Cluster 12: Htr2c+,Glra1-  CA1 pyramidal cells (Excitatory neuron 7)
-cluster12 <- c("Htr2c")
-
-# Cluster 13: Htr2c+,Glra1+ CA1 pyramidal cells (Inhibitory neuron 3)
-cluster13 <- c("Htr2c", "Glra1")
-
-# Cluster 14: Amigo2+ CA2 pyramidal neurons (Excitatory neuron 8)
-cluster14 <- c("Amigo2")
-
-# Cluster 15: Pdgfra+ Oligodendrocyte precursor cells (OPCs)
-cluster15 <- c("Pdgfra")
-
-# Cluster 16: Reln+,Dcn+ CA1 pyramidal cells (Excitatory neuron 9)
-cluster16 <- c("Reln", "Dcn")
-
-# Combine all cluster vectors into one
-all_genes <- c(
-  cluster0, cluster1, cluster2, cluster3, cluster4, cluster5, cluster6,
-  cluster7, cluster8, cluster9, cluster10, cluster11, cluster12, cluster13,
-  cluster14, cluster15, cluster16
-)
-
-# Remove duplicates
-all_genes <- unique(all_genes)
-
-```
-
-
-## Finding differentially expressed features (cluster biomarkers)
-Seurat can help you find markers that define clusters via differential expression (DE). By default, it identifies positive and negative markers of a single cluster (specified in ident.1), compared to all other cells. F
-FindAllMarkers() automates this process for all clusters, but you can also test groups of clusters vs. each other, or against all cells.
-
-
-The results data frame has the following columns :
-p_val : p-value (unadjusted)
-avg_log2FC : log fold-change of the average expression between the two groups. Positive values indicate that the feature is more highly expressed in the first group.
-pct.1 : The percentage of cells where the feature is detected in the first group
-pct.2 : The percentage of cells where the feature is detected in the second group
-p_val_adj : Adjusted p-value, based on Bonferroni correction using all features in the dataset.
-If the ident.2 parameter is omitted or set to NULL, FindMarkers() will test for differentially expressed features between the group specified by ident.1 and all other cells. Additionally, the parameter only.pos can be set to TRUE to only search for positive markers, i.e. features that are more highly expressed in the ident.1 group.
-
-In Seurat v5, we use the presto package (as described here and available for installation here), to dramatically improve the speed of DE analysis, particularly for large datasets. For users who are not using presto, you can examine the documentation for this function (?FindMarkers) to explore the min.pct and logfc.threshold parameters, which can be increased in order to increase the speed of DE testing.
-
-```{r, fig.height = 7, fig.width = 14}
-DotPlot(Seurat_WT, features= all_genes) 
-```
-
-```{r, fig.height = 7, fig.width = 14}
-# find all markers of cluster 5
-Idents(Seurat_WT) <- "seurat_clusters"
-cluster13.markers <- FindMarkers(Seurat_WT, ident.1 = "13", only.pos = TRUE)
-head(cluster13.markers, n = 10)
-```
-
-### Plot the markers
-```{r, fig.height = 7, fig.width = 14}
-cluster13.markers %>%
-    dplyr::filter(avg_log2FC > 2 & p_val < 0.05) %>%
-    slice_max(avg_log2FC, n = 10) -> top10
-
-Idents(Seurat_WT) <- "seurat_clusters"
-DotPlot(Seurat_WT, features = rownames(top10))
-```
-
-# Azimuth
-Automated naming of clusters 
-
-```{r, fig.height = 7, fig.width = 14}
-Seurat_WT <- RunAzimuth(Seurat_WT, reference = "mousecortexref")
-p1 <- DimPlot(Seurat_WT, group.by = "predicted.celltype.l2", label = TRUE, label.size = 3) + NoLegend()
-p2 <- DimPlot(Seurat_WT, group.by = "Method")
-p1 + p2
-
-```
-
-# Export data to MapMyCells
-We will export the count matrix and map the cells with Allen Brain atlas
-see: https://portal.brain-map.org/atlases-and-data/bkp/mapmycells
-use: https://knowledge.brain-map.org/mapmycells/process/
-## Extract the Count Matrix
-
-```{r,fig.height = 7, fig.width = 10}
-mat <- GetAssayData(object = subset(Seurat_WT, downsample = 1000, subset = seurat_clusters %in% c(13)), assay = "RNA", slot = "counts")
-# we need to transpose the matrix, as MapMyCells expects matrix in which rows are "cells" and columns are genes! 
-mat_t <- t(mat)
-write.csv(mat_t, "./count_matrix_cluster13.csv")
-```
-
+3. Find the pca components that you think give you reliable clusters. 
 
 <details>
   <summary>**Session Info**</summary>

@@ -120,16 +120,20 @@ Seurat_WT[["percent.mt"]] <- PercentageFeatureSet(Seurat_WT, pattern = "^mt-")
 * We filter cells that have low mitochondrial counts
 
 ```{r filtering accoding to visual analysis of the plots both}
-Seurat_AD <- subset(Seurat_AD, subset = nFeature_RNA < 2500 & percent.mt < 5)
-Seurat_WT <- subset(Seurat_WT, subset = nFeature_RNA < 2500  & percent.mt < 5)
+Seurat_AD <- subset(Seurat_AD, subset = nFeature_RNA < 2500 & nFeature_RNA > 200 & percent.mt < 5)
+Seurat_WT <- subset(Seurat_WT, subset = nFeature_RNA < 2500 & nFeature_RNA > 200 & percent.mt < 5)
 ```
 
 ## Normalize and find variable genes for each data set
 ```{r normalize and find variable genes both}
 Seurat_WT <- NormalizeData(Seurat_WT)
 Seurat_AD <- NormalizeData(Seurat_AD)
-Seurat_WT <- FindVariableFeatures(Seurat_WT)
-Seurat_AD <- FindVariableFeatures(Seurat_AD)
+Seurat_WT <- FindVariableFeatures(Seurat_WT,
+                                  selection.method = "vst",
+                                  nfeatures = 2000)
+Seurat_AD <- FindVariableFeatures(Seurat_AD,
+                                  selection.method = "vst",
+                                  nfeatures = 2000)
 ```
 
 Now our data is cleaned and normalised and ready to compare with the second 
@@ -137,7 +141,7 @@ dataset (in our case with data from WT mice). However, we need to preprocess the
 
 # Merging data sets
 In order to integrate the data sets we will form a merged object first. merge() 
-funciton will by default erase normalisation data. Here we used the same 
+function will by default erase normalisation data. Here we used the same 
 normalisation for both data sets, so we can keep it in merged object 
 (use parameter merge.data = TRUE). 
 
@@ -177,7 +181,9 @@ We calculate a subset of features that exhibit high cell-to-cell variation in th
 Our procedure in Seurat is described in detail [here](https://doi.org/10.1016/j.cell.2019.05.031), and improves on previous versions by directly modeling the mean-variance relationship inherent in single-cell data, and is implemented in the `FindVariableFeatures()` function. By default, we return 2,000 features per dataset. These will be used in downstream analysis, like PCA.
 
 ```{r, variable features merge}
-Seurat_AD_WT <- FindVariableFeatures(Seurat_AD_WT)
+Seurat_AD_WT <- FindVariableFeatures(Seurat_AD_WT,
+                                  selection.method = "vst",
+                                  nfeatures = 2000)
 
 # plot variable features with and without labels
  VariableFeaturePlot(Seurat_AD_WT)
@@ -245,7 +251,7 @@ Next we perform PCA on the scaled data. By default, only the previously determin
 For the first principal components, Seurat outputs a list of genes with the most positive and negative loadings, representing modules of genes that exhibit either correlation (or anti-correlation) across single-cells in the dataset.
 
 ```{r pca}
-Seurat_AD_WT <- RunPCA(Seurat_AD_WT, features = VariableFeatures(object = Seurat_AD_WT), npcs = 25)
+Seurat_AD_WT <- RunPCA(Seurat_AD_WT, features = VariableFeatures(object = Seurat_AD_WT), npcs = 50)
 ```
 
 Seurat provides several useful ways of visualizing both cells and features that define the PCA, including `VizDimReduction()`, `DimPlot()`, and `DimHeatmap()`
@@ -276,7 +282,7 @@ In [Macosko *et al*](http://www.cell.com/abstract/S0092-8674(15)00549-8), we imp
 An alternative heuristic method generates an 'Elbow plot': a ranking of principle components based on the percentage of variance explained by each one (`ElbowPlot()` function). In this example, we can observe an 'elbow' around PC9-10, suggesting that the majority of true signal is captured in the first 10 PCs. 
 
 ```{r elbow_plot, fig.height=6, fig.width=10}
-ElbowPlot(Seurat_AD_WT)
+ElbowPlot(Seurat_AD_WT, ndims = 50)
 ```
 
 Identifying the true dimensionality of a dataset -- can be challenging/uncertain for the user. We therefore suggest these multiple approaches for users. The first is more supervised, exploring PCs to determine relevant sources of heterogeneity, and could be used in conjunction with GSEA for example. The second (`ElbowPlot`) The third is a heuristic that is commonly used, and can be calculated instantly. In this example, we might have been justified in choosing anything between PC 7-12 as a cutoff. 
@@ -297,8 +303,8 @@ To cluster the cells, we next apply modularity optimization techniques such as t
 
 
 ```{r cluster}
-Seurat_AD_WT <- FindNeighbors(Seurat_AD_WT,reduction = "pca", dims = 1:13)
-Seurat_AD_WT <- FindClusters(Seurat_AD_WT, resolution = 2) # the higher the number the higher the clusters
+Seurat_AD_WT <- FindNeighbors(Seurat_AD_WT,reduction = "pca", dims = 1:50)
+Seurat_AD_WT <- FindClusters(Seurat_AD_WT, resolution = 0.6) # the higher the number the higher the clusters
 
 # Look at cluster IDs of the first 5 cells
 head(Idents(Seurat_AD_WT), 5)
@@ -314,7 +320,7 @@ While we and others have routinely found 2D visualization techniques like tSNE a
 
 
 ```{r umap merge}
-Seurat_AD_WT <- RunUMAP(Seurat_AD_WT, dims = 1:13)
+Seurat_AD_WT <- RunUMAP(Seurat_AD_WT, dims = 1:50)
 ```
 
 ```{r umapplot, fig.height=8, fig.width=8}
@@ -348,12 +354,12 @@ Seurat_AD_WT <- IntegrateLayers(
 
 ## Clustering and UMAP on integrated data
 ```{r, UMAP ckustering}
-Seurat_AD_WT <- FindNeighbors(Seurat_AD_WT, reduction = "integrated.cca", dims = 1:13)
-Seurat_AD_WT <- FindClusters(Seurat_AD_WT, resolution = 2, cluster.name = "cca_clusters")
+Seurat_AD_WT <- FindNeighbors(Seurat_AD_WT, reduction = "integrated.cca", dims = 1:50)
+Seurat_AD_WT <- FindClusters(Seurat_AD_WT, resolution = 0.6, cluster.name = "cca_clusters")
 ```
 
 ```{r, UMAP cca}
-Seurat_AD_WT <- RunUMAP(Seurat_AD_WT, reduction = "integrated.cca", dims = 1:13, reduction.name = "umap.cca")
+Seurat_AD_WT <- RunUMAP(Seurat_AD_WT, reduction = "integrated.cca", dims = 1:50, reduction.name = "umap.cca")
 
 ```
 ```{r umapplot ckuster, fig.height=8, fig.width=8}
@@ -390,7 +396,8 @@ FeaturePlot(
     "C1qa", # Microglia
     "Trf", # Myelin-forming mature oligodendrocytes 
     "Cldn5"), # Endothelial cells
-  ncol = 3)
+  ncol = 3,
+  reduction = 'umap.cca')
 ```
 
 ## Differential gene expression
@@ -406,62 +413,62 @@ VlnPlot(Seurat_AD_WT, 'Apoe', group.by = 'condition') # check knockout
 This is to just prepare some marker genes
 Data taken from the publication
 ```{r, clusters}
-# Cluster 0: Wfs1+,Dcn+,Rxfp1- CA1 pyramidal neurons (Excitatory neuron 1)
-cluster0 <- c("Wfs1", "Dcn")
+# celltype_ 0: Wfs1+,Dcn+,Rxfp1- CA1 pyramidal neurons (Excitatory neuron 1)
+celltype_0 <- c("Wfs1", "Dcn")
 
-# Cluster 1: C1ql2+ Granule cell of the dentate gyrus (Excitatory neuron 2)
-cluster1 <- c("C1ql2")
+# celltype_ 1: C1ql2+ Granule cell of the dentate gyrus (Excitatory neuron 2)
+celltype_1 <- c("C1ql2")
 
-# Cluster 2: Wfs1+,Dcn-,Rxfp1+ CA1 pyramidal neurons (Excitatory neuron 3)
-cluster2 <- c("Wfs1", "Rxfp1")
+# celltype_ 2: Wfs1+,Dcn-,Rxfp1+ CA1 pyramidal neurons (Excitatory neuron 3)
+celltype_2 <- c("Wfs1", "Rxfp1")
 
-# Cluster 3: Bok+ CA3 pyramidal neurons (Excitatory neuron 4)
-cluster3 <- c("Bok")
+# celltype_ 3: Bok+ CA3 pyramidal neurons (Excitatory neuron 4)
+celltype_3 <- c("Bok")
 
-# Cluster 4: Wfs1-,Dcn-, pyramidal neurons (Excitatory neuron 5)
-cluster4 <- c()  # no positive markers
+# celltype_ 4: Wfs1-,Dcn-, pyramidal neurons (Excitatory neuron 5)
+celltype_4 <- c()  # no positive markers
 
-# Cluster 5: Sst+,Erbb4+ CA1 basket cells (Inhibitory neuron 1)
-cluster5 <- c("Sst", "Erbb4")
+# celltype_ 5: Sst+,Erbb4+ CA1 basket cells (Inhibitory neuron 1)
+celltype_5 <- c("Sst", "Erbb4")
 
-# Cluster 6: Slc1a3+ Astrocytes
-cluster6 <- c("Slc1a3")
+# celltype_ 6: Slc1a3+ Astrocytes
+celltype_6 <- c("Slc1a3")
 
-# Cluster 7: Trf+ Myelin-forming mature oligodendrocytes (MFOLs)
-cluster7 <- c("Trf")
+# celltype_ 7: Trf+ Myelin-forming mature oligodendrocytes (MFOLs)
+celltype_7 <- c("Trf")
 
-# Cluster 8: Vip+,Reln+,Htr3a+,Erbb4+ CA1 basket cells (Inhibitory neuron 2)
-cluster8 <- c("Vip", "Reln", "Htr3a", "Erbb4")
+# celltype_ 8: Vip+,Reln+,Htr3a+,Erbb4+ CA1 basket cells (Inhibitory neuron 2)
+celltype_8 <- c("Vip", "Reln", "Htr3a", "Erbb4")
 
-# Cluster 9: Ndst4+,Rxfp1+,Dcn- CA1 pyramidal neurons (Excitatory neuron 6)
-cluster9 <- c("Ndst4", "Rxfp1")
+# celltype_ 9: Ndst4+,Rxfp1+,Dcn- CA1 pyramidal neurons (Excitatory neuron 6)
+celltype_9 <- c("Ndst4", "Rxfp1")
 
-# Cluster 10: C1qa+,Trf+ Microglia
-cluster10 <- c("C1qa", "Trf")
+# celltype_ 10: C1qa+,Trf+ Microglia
+celltype_10 <- c("C1qa", "Trf")
 
-# Cluster 11: Cldn5+ Endothelial cells
-cluster11 <- c("Cldn5")
+# celltype_ 11: Cldn5+ Endothelial cells
+celltype_11 <- c("Cldn5")
 
-# Cluster 12: Htr2c+,Glra1-  CA1 pyramidal cells (Excitatory neuron 7)
-cluster12 <- c("Htr2c")
+# celltype_ 12: Htr2c+,Glra1-  CA1 pyramidal cells (Excitatory neuron 7)
+celltype_12 <- c("Htr2c")
 
-# Cluster 13: Htr2c+,Glra1+ CA1 pyramidal cells (Inhibitory neuron 3)
-cluster13 <- c("Htr2c", "Glra1")
+# celltype_ 13: Htr2c+,Glra1+ CA1 pyramidal cells (Inhibitory neuron 3)
+celltype_13 <- c("Htr2c", "Glra1")
 
-# Cluster 14: Amigo2+ CA2 pyramidal neurons (Excitatory neuron 8)
-cluster14 <- c("Amigo2")
+# celltype_ 14: Amigo2+ CA2 pyramidal neurons (Excitatory neuron 8)
+celltype_14 <- c("Amigo2")
 
-# Cluster 15: Pdgfra+ Oligodendrocyte precursor cells (OPCs)
-cluster15 <- c("Pdgfra")
+# celltype_ 15: Pdgfra+ Oligodendrocyte precursor cells (OPCs)
+celltype_15 <- c("Pdgfra")
 
-# Cluster 16: Reln+,Dcn+ CA1 pyramidal cells (Excitatory neuron 9)
-cluster16 <- c("Reln", "Dcn")
+# celltype_ 16: Reln+,Dcn+ CA1 pyramidal cells (Excitatory neuron 9)
+celltype_16 <- c("Reln", "Dcn")
 
-# Combine all cluster vectors into one
+# Combine all celltype_ vectors into one
 all_genes <- c(
-  cluster0, cluster1, cluster2, cluster3, cluster4, cluster5, cluster6,
-  cluster7, cluster8, cluster9, cluster10, cluster11, cluster12, cluster13,
-  cluster14, cluster15, cluster16
+  celltype_0, celltype_1, celltype_2, celltype_3, celltype_4, celltype_5, celltype_6,
+  celltype_7, celltype_8, celltype_9, celltype_10, celltype_11, celltype_12, celltype_13,
+  celltype_14, celltype_15, celltype_16
 )
 
 # Remove duplicates
@@ -495,26 +502,26 @@ DotPlot(Seurat_AD_WT, features= c(all_genes, 'Apoe'), group.by = "condition")
 Compare the results of FindMarkers and FindConservedMarkers for a given cluster.
 Then contrast this with FindMarkers comparingWT and AD for a given cluser.
 ```{r, fig.height = 7, fig.width = 14}
-# find all markers of cluster 5
+# find all markers of cluster 7
 Idents(Seurat_AD_WT) <- "seurat_clusters"
-cluster13.markers <- FindMarkers(Seurat_AD_WT, ident.1 = "13", only.pos = TRUE)
-head(cluster13.markers, n = 10)
+cluster7.markers <- FindMarkers(Seurat_AD_WT, ident.1 = "7", only.pos = TRUE)
+head(cluster6.markers, n = 10)
 
 Idents(Seurat_AD_WT) <- "seurat_clusters"
-cluster13.conserved <- FindConservedMarkers(Seurat_AD_WT, ident.1 = "13", grouping.var = "condition", verbose = FALSE)
+cluster7.conserved <- FindConservedMarkers(Seurat_AD_WT, ident.1 = "7", grouping.var = "condition", verbose = FALSE)
 
 # Find markers across conditions
 Seurat_AD_WT$cluster_cond <- paste(Seurat_AD_WT$seurat_clusters, 
                                    Seurat_AD_WT$condition, sep = "_")
 
 Idents(Seurat_AD_WT) <- "cluster_cond"
-cluster13.markers.cond <- FindMarkers(Seurat_AD_WT, ident.1 = "13_WT", ident.2 = "13_AD")
+cluster7.markers.cond <- FindMarkers(Seurat_AD_WT, ident.1 = "7_WT", ident.2 = "7_AD")
 
 ```
 
 ### Plot the markers
 ```{r, fig.height = 7, fig.width = 14}
-cluster13.markers %>%
+cluster7.markers %>%
     dplyr::filter(avg_log2FC > 2 & p_val < 0.05) %>%
     slice_max(avg_log2FC, n = 10) -> top10
 
@@ -524,14 +531,14 @@ DotPlot(Seurat_AD_WT, features = rownames(top10), group.by = "condition")
 ```
 
 ```{r, fig.height = 7, fig.width = 14}
-cluster13.markers.cond %>%
+cluster7.markers.cond %>%
     dplyr::filter(avg_log2FC > 2 & p_val < 0.05) %>%
     slice_max(avg_log2FC, n = 10) -> top10
 
 Idents(Seurat_AD_WT) <- "seurat_clusters"
 DotPlot(Seurat_AD_WT, features = rownames(top10), group.by = "condition")
 
-cluster13.markers.cond %>%
+cluster7.markers.cond %>%
     dplyr::filter(avg_log2FC > -2 & p_val < 0.05) %>%
     slice_min(avg_log2FC, n = 10) -> top10
 
@@ -539,33 +546,6 @@ Idents(Seurat_AD_WT) <- "seurat_clusters"
 DotPlot(Seurat_AD_WT, features = rownames(top10), group.by = "condition")
 
 ```
-
-
-
-# Azimuth
-Automated naming of clusters 
-
-```{r, fig.height = 7, fig.width = 14}
-Seurat_AD_WT <- RunAzimuth(Seurat_AD_WT, reference = "mousecortexref")
-p1 <- DimPlot(Seurat_AD_WT, group.by = "predicted.celltype.l2", label = TRUE, label.size = 3) + NoLegend()
-p2 <- DimPlot(Seurat_AD_WT, group.by = "Method")
-p1 + p2
-
-```
-
-# Export data to MapMyCells
-We will export the count matrix and map the cells with Allen Brain atlas
-see: https://portal.brain-map.org/atlases-and-data/bkp/mapmycells
-use: https://knowledge.brain-map.org/mapmycells/process/
-## Extract the Count Matrix
-
-```{r,fig.height = 7, fig.width = 10}
-mat <- GetAssayData(object = subset(Seurat_AD_WT, downsample = 1000, subset = seurat_clusters %in% c(13)), assay = "RNA", slot = "counts")
-# we need to transpose the matrix, as MapMyCells expects matrix in which rows are "cells" and columns are genes! 
-mat_t <- t(mat)
-write.csv(mat_t, "./output/count_matrix_cluster13.csv")
-```
-
 
 <details>
   <summary>**Session Info**</summary>
